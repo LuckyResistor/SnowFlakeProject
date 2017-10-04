@@ -29,6 +29,19 @@
 namespace Hardware {
 
 
+/// The port mask for all pins used for LEDs
+///
+const uint32_t cPortMaskLed = 0b00000000011111110000111111111111;
+
+/// The mask for the data input.
+///
+const uint32_t cPortMaskDataIn = (1UL<<25);
+
+/// The mask for the data output.
+///
+const uint32_t cPortMaskDataOut = (1UL<<15);
+
+
 /// Insert a short delay in the startup to have time to stop before things start.
 ///
 void initializeDelayStart()
@@ -38,14 +51,22 @@ void initializeDelayStart()
 }
 
 
-/// Initialize all reqired clock sources for the CPU and the busses
+/// Initialize all required clock sources for the CPU and the buses
 ///
 void initializeCpuClocks()
 {
+	// Change the timing of the NVM access 
+	NVMCTRL->CTRLB.bit.RWS = NVMCTRL_CTRLB_RWS_HALF_Val; // 1 wait state for operating at 2.7-3.3V at 48MHz.
+	
+	// Enable the bus clock for the clock system.
+	PM->APBAMASK.bit.GCLK_ = true;
+
 	// A) Initialize the DFLL to run in closed-loop mode at 48MHz
 	// A0. Make a software reset of the clock system.
 	GCLK->CTRL.bit.SWRST = true;
 	while (GCLK->CTRL.bit.SWRST && GCLK->STATUS.bit.SYNCBUSY) {};
+	// A1. Make sure the OCM8M keeps running.
+	SYSCTRL->OSC8M.bit.ONDEMAND = 0;
 	// A1. Set the division factor to 64, which reduces the 1MHz source to 15.625kHz
 	GCLK->GENDIV.reg =
 		GCLK_GENDIV_ID(3) | // Select generator 3
@@ -86,27 +107,13 @@ void initializeCpuClocks()
 	while (!SYSCTRL->INTFLAG.bit.DFLLLCKC && !SYSCTRL->INTFLAG.bit.DFLLLCKF) {};
 	// A10. Wait until the DFLL is ready.
 	while (!SYSCTRL->INTFLAG.bit.DFLLRDY) {};
-
-/*
-	// For testing, output the DFLL clock to PA14 CLK_IO0
-	GCLK->GENCTRL.reg =
-		GCLK_GENCTRL_ID(4) | // Select generator 4
-		GCLK_GENCTRL_SRC_DFLL48M | // Select source DFLL48M
-		GCLK_GENCTRL_OE | // Enable output
-		GCLK_GENCTRL_GENEN; // Enable this generic clock generator
-	while (GCLK->STATUS.bit.SYNCBUSY != 0) {}; // Wait for synchronization
-	PORT->Group[0].PMUX[5].bit.PMUXE = PORT_PMUX_PMUXE_H_Val; // Set PA10 as clock output.
-	PORT->Group[0].PINCFG[10].reg = PORT_PINCFG_PMUXEN; // Enable pin multiplexing.
-	PORT->Group[0].PMUX[8].bit.PMUXO = PORT_PMUX_PMUXE_H_Val; // Set PA10 as clock output.
-	PORT->Group[0].PINCFG[17].reg = PORT_PINCFG_PMUXEN; // Enable pin multiplexing.	
-*/
 }
 
 
 /// Switch the CPU speed to the 48MHz clock.
 ///
 void initializeCpuSpeed()
-{
+{	
 	// Set the divisor of generic clock 0 to 0
 	GCLK->GENDIV.reg =
 		GCLK_GENDIV_ID(0) | // Select generator 0
@@ -122,10 +129,21 @@ void initializeCpuSpeed()
 }
 
 
+/// Initialize the configuration of the GPIO
+///
 void initializeGpio()
 {
-	// Configure one pin
-	PORT->Group[0].DIR.reg |= 0b1;	
+	// Configure all LED pins as outputs.
+	PORT->Group[0].DIR.reg |= cPortMaskLed;
+	// Set all LED pins to high to turn the LEDs off.
+	PORT->Group[0].OUT.reg |= cPortMaskLed;
+	// Configure the data in port as input with pull-down.
+	PORT->Group[0].WRCONFIG.reg =
+		PORT_WRCONFIG_HWSEL |
+		PORT_WRCONFIG_WRPINCFG |
+		PORT_WRCONFIG_PULLEN |
+		PORT_WRCONFIG_INEN |
+		(cPortMaskDataIn >> 16);
 }
 
 
@@ -138,4 +156,10 @@ void initialize()
 }
 
 	
+void setLedPinLevels(uint32_t outputMask)
+{
+	PORT->Group[0].OUT.reg = (PORT->Group[0].OUT.reg & (~cPortMaskLed)) | (outputMask & cPortMaskLed);
+}
+
+
 }

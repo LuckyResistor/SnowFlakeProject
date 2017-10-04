@@ -21,6 +21,9 @@
 #pragma once
 
 
+#include <cstdint>
+
+
 /// The hardware abstraction layer
 ///
 namespace Hardware {
@@ -29,6 +32,10 @@ namespace Hardware {
 /// Initialize the MCU hardware.
 ///
 void initialize();	
+
+/// Update the states of the LED pins.
+///
+void setLedPinLevels(uint32_t outputMask);
 
 	
 }

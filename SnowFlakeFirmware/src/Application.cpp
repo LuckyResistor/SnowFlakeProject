@@ -39,8 +39,10 @@ void initialize()
 void loop()
 {
 	while (true) {
-		Helper::delayNop(5000);
-		PORT->Group[0].OUTTGL.reg = 0b1;
+		Helper::delayNop(5000000);
+		Hardware::setLedPinLevels(0xffffffffUL);
+		Helper::delayNop(5000000);
+		Hardware::setLedPinLevels(0x00000000UL);
 	}
 }
 
