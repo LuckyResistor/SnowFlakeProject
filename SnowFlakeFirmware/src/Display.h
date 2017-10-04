@@ -18,37 +18,17 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "Application.h"
+#pragma once
 
 
-#include "Display.h"
-#include "Hardware.h"
-#include "Helper.h"
-#include "TimerInterrupt.h"
-
-#include "sam.h"
-
-
-namespace Application {
+/// The display module
+///
+namespace Display {
 	
 
-void initialize()
-{
-	Hardware::initialize();
-	TimerInterrupt::initialize();
-	Display::initialize();
-}
+/// Initialize the display module.
+///
+void initialize();
 
-
-void loop()
-{
-	while (true) {
-		Helper::delayNop(5000000);
-		//Hardware::setLedPinLevels(0xffffffffUL);
-		Helper::delayNop(5000000);
-		//Hardware::setLedPinLevels(0x00000000UL);
-	}
-}
-
-
+	
 }
