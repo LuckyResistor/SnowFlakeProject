@@ -21,14 +21,38 @@
 #pragma once
 
 
+#include <cstdint>
+
+
 /// The display module
 ///
 namespace Display {
-	
+
+
+/// The maximum level for the display
+///
+extern const uint8_t cMaximumLevel;
+
+/// The LED count.
+///
+extern const uint8_t cLedCount;
+
 
 /// Initialize the display module.
 ///
 void initialize();
 
+/// Set the level for one single LED.
+///
+/// @param ledIndex The LED index from 0-18.
+/// @param level The LED brightness level from 0-64. 0 = dark, 64 = 100% on.
+///
+void setLedLevel(uint8_t ledIndex, uint8_t level);
+
+/// Show the current display buffer.
+///
+void show();
+
 	
 }
+

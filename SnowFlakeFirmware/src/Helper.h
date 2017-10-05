@@ -29,10 +29,16 @@
 namespace Helper {
 	
 	
+/// Initialize the helper module.
+///
+void initialize();	
+
 /// Simple delay using a loop around a NOP command.
 ///
 void delayNop(uint32_t cycles);
-	
-	
+		
+/// Delay using the SysTick for longer delays.
+///
+void delayMs(uint32_t delay);
 	
 }

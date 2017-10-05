@@ -32,3 +32,4 @@
 *.app
 .vs/
 SnowFlakeFirmware/Debug/
+SnowFlakeFirmware/Release/

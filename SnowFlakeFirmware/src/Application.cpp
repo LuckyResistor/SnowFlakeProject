@@ -24,7 +24,6 @@
 #include "Display.h"
 #include "Hardware.h"
 #include "Helper.h"
-#include "TimerInterrupt.h"
 
 #include "sam.h"
 
@@ -35,7 +34,7 @@ namespace Application {
 void initialize()
 {
 	Hardware::initialize();
-	TimerInterrupt::initialize();
+	Helper::initialize();
 	Display::initialize();
 }
 
@@ -43,10 +42,17 @@ void initialize()
 void loop()
 {
 	while (true) {
-		Helper::delayNop(5000000);
-		//Hardware::setLedPinLevels(0xffffffffUL);
-		Helper::delayNop(5000000);
-		//Hardware::setLedPinLevels(0x00000000UL);
+		for (uint8_t i = 0; i < 0x80; ++i) {
+			for (uint8_t j = 0; j < Display::cLedCount; ++j) {
+				uint8_t level = (i + (5*j)) & 0x7f;
+				if (level >= 0x40) {
+					level = 0x80 - level;
+				}
+				Display::setLedLevel(j, level);
+			}
+			Display::show();
+			Helper::delayNop(500000);			
+		}
 	}
 }
 

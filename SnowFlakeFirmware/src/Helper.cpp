@@ -21,16 +21,49 @@
 #include "Helper.h"
 
 
+#include "sam.h"
+
+
 namespace Helper {
+
+
+/// The tick counter for the delay function.
+/// Align the counter to make sure all operations on this 32bit value are atomic.
+///
+volatile uint32_t gTickCounter __attribute__((aligned (4))) = 0;
+
+
+void initialize()
+{
+	// Configure SysTick to generate an interrupt every ms.
+	SysTick_Config(48000000/1000);
+	// Enable the interrupt with a low priority.
+	NVIC_SetPriority(SysTick_IRQn, 2);
+	NVIC_EnableIRQ(SysTick_IRQn);
+}
 
 
 void delayNop(uint32_t cycles)
 {
 	for (uint32_t i = 0; i < cycles; ++i) {
-		asm("NOP");
+		__NOP();
 	}
 }
 	
 
+void delayMs(uint32_t delay)
+{
+	if (delay > 0) {
+		const uint32_t endValue = gTickCounter + delay;
+		while (gTickCounter != endValue) { __NOP(); }
+	}
 }
 
+
+}
+
+
+void SysTick_Handler()
+{
+	++Helper::gTickCounter;
+}
