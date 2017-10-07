@@ -29,38 +29,6 @@
 namespace Hardware {
 
 
-/// The port mask for all pins used for LEDs
-///
-const uint32_t cPortMaskLed = 
-	(1UL<<0)|
-	(1UL<<1)|
-	(1UL<<2)|
-	(1UL<<3)|
-	(1UL<<4)|
-	(1UL<<5)|
-	(1UL<<6)|
-	(1UL<<7)|
-	(1UL<<8)|
-	(1UL<<9)|
-	(1UL<<10)|
-	(1UL<<11)|
-	(1UL<<16)|
-	(1UL<<17)|
-	(1UL<<18)|
-	(1UL<<19)|
-	(1UL<<22)|
-	(1UL<<23)|
-	(1UL<<24);
-
-/// The mask for the data input.
-///
-const uint32_t cPortMaskDataIn = (1UL<<25);
-
-/// The mask for the data output.
-///
-const uint32_t cPortMaskDataOut = (1UL<<15);
-
-
 /// Insert a short delay in the startup to have time to stop before things start.
 ///
 void initializeDelayStart()
@@ -148,36 +116,11 @@ void initializeCpuSpeed()
 }
 
 
-/// Initialize the configuration of the GPIO
-///
-void initializeGpio()
-{
-	// Configure all LED pins as outputs.
-	PORT->Group[0].DIR.reg |= cPortMaskLed | cPortMaskDataOut;
-	// Set all LED pins to high to turn the LEDs off.
-	PORT->Group[0].OUT.reg |= cPortMaskLed;
-	// Configure the data in port as input with pull-down.
-	PORT->Group[0].WRCONFIG.reg =
-		PORT_WRCONFIG_HWSEL |
-		PORT_WRCONFIG_WRPINCFG |
-		PORT_WRCONFIG_PULLEN |
-		PORT_WRCONFIG_INEN |
-		(cPortMaskDataIn >> 16);
-}
-
-
 void initialize()
 {
 	initializeDelayStart();
 	initializeCpuClocks();
 	initializeCpuSpeed();
-	initializeGpio();
-}
-
-	
-void setLedPinLevels(uint32_t outputMask)
-{
-	PORT->Group[0].OUT.reg = (PORT->Group[0].OUT.reg & (~cPortMaskLed)) | (outputMask & cPortMaskLed);
 }
 
 

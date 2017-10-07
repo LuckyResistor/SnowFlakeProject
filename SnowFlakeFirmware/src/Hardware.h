@@ -33,9 +33,5 @@ namespace Hardware {
 ///
 void initialize();	
 
-/// Update the states of the LED pins.
-///
-void setLedPinLevels(uint32_t outputMask);
-
 	
 }

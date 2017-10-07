@@ -21,6 +21,7 @@
 #include "Application.h"
 
 
+#include "Communication.h"
 #include "Display.h"
 #include "Hardware.h"
 #include "Helper.h"
@@ -36,6 +37,7 @@ void initialize()
 	Hardware::initialize();
 	Helper::initialize();
 	Display::initialize();
+	Communication::initialize();
 }
 
 
@@ -51,7 +53,7 @@ void loop()
 				Display::setLedLevel(j, level);
 			}
 			Display::show();
-			Helper::delayNop(500000);			
+			Helper::delayNop(500000);
 		}
 	}
 }

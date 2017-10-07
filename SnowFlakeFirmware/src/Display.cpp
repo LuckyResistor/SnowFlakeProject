@@ -63,6 +63,13 @@ const uint32_t cLedMask16 = (1UL<<18);
 const uint32_t cLedMask17 = (1UL<<23);
 const uint32_t cLedMask18 = (1UL<<24);
 
+/// The port mask for all pins used for LEDs
+///
+const uint32_t cPortMaskLed =
+	cLedMask0|cLedMask1|cLedMask2|cLedMask3|cLedMask4|cLedMask5|cLedMask6|cLedMask7|
+	cLedMask8|cLedMask9|cLedMask10|cLedMask11|cLedMask12|cLedMask13|cLedMask14|cLedMask15|
+	cLedMask16|cLedMask17|cLedMask18;
+
 /// The maximum level.
 ///
 const uint8_t cMaximumLevel = 64;
@@ -104,19 +111,24 @@ void initialize()
 	std::memset(&gDisplayBufferA, cMaximumLevel, sizeof(uint8_t)*cLedCount);
 	std::memset(&gDisplayBufferB, cMaximumLevel, sizeof(uint8_t)*cLedCount);
 
+	// Configure all LED pins as outputs.
+	PORT->Group[0].DIR.reg |= cPortMaskLed;
+	// Set all LED pins to high to turn the LEDs off.
+	PORT->Group[0].OUT.reg |= cPortMaskLed;
+
 	// Enable power for counter TC0
 	PM->APBCMASK.bit.TC0_ = true;
 	// Send the main clock to the counter.
 	GCLK->CLKCTRL.reg =
-	GCLK_CLKCTRL_ID_TC0_TC1 |
-	GCLK_CLKCTRL_GEN_GCLK0 |
-	GCLK_CLKCTRL_CLKEN;
+		GCLK_CLKCTRL_ID_TC0_TC1 |
+		GCLK_CLKCTRL_GEN_GCLK0 |
+		GCLK_CLKCTRL_CLKEN;
 	while (GCLK->STATUS.bit.SYNCBUSY) {}; // Wait for synchronization
 	// Configure the counter
 	TC0->COUNT16.CTRLA.reg =
-	TC_CTRLA_PRESCALER_DIV8 |
-	TC_CTRLA_WAVEGEN_MFRQ |
-	TC_CTRLA_MODE_COUNT16;
+		TC_CTRLA_PRESCALER_DIV8 |
+		TC_CTRLA_WAVEGEN_MFRQ |
+		TC_CTRLA_MODE_COUNT16;
 	while (TC0->COUNT16.STATUS.bit.SYNCBUSY) {};
 	// Configure the CC0 value
 	TC0->COUNT16.CC[0].reg = 375; // 48MHz / 2 / 64kHz = 375
@@ -132,6 +144,11 @@ void initialize()
 	// Enable the counter.
 	TC0->COUNT16.CTRLA.bit.ENABLE = true;
 	while (TC0->COUNT16.STATUS.bit.SYNCBUSY) {};
+}
+
+
+void setLedPinLevels(uint32_t outputMask)
+{
 }
 
 
@@ -220,7 +237,7 @@ void onInterrupt()
 		if (gDisplayBufferB[18] > currentPwmValue) ledMask |= cLedMask18;
 	}
 	// Send the new mask to the port
-	Hardware::setLedPinLevels(ledMask);
+	PORT->Group[0].OUT.reg = (PORT->Group[0].OUT.reg & (~cPortMaskLed)) | (ledMask & cPortMaskLed);
 	// Increase the PWM counter for the next call.
 	++gPwmCounter;
 	if (gPwmCounter>=cMaximumLevel) {
