@@ -18,41 +18,33 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "SceneManager.hpp"
+#pragma once
 
 
-#include "scene/TestFlash.hpp"
-#include "scene/SimpleShift.hpp"
+#include "../Scene.hpp"
 
 
-namespace SceneManager {
+/// \namespace scene::SimpleShift
+/// A simple shifting scene.
 
 
-#define LR_SCENE_ENTRY(name) Scene(scene::name::cFrameCount, &scene::name::initialize, &scene::name::getFrame)
+namespace scene {
+namespace SimpleShift {
 
 
-static Scene cScenes[] = {
-	LR_SCENE_ENTRY(SimpleShift),
-	LR_SCENE_ENTRY(TestFlash),
-};
+/// The number of frames for this scene
+///
+const uint32_t cFrameCount = 50;
 
+/// The function to initialize this scene.
+///
+void initialize(SceneData *data);
 
-void initialize()
-{
-	// nothing to do.
-}
-
-
-uint8_t getSceneCount()
-{
-	return 1;
-}
-
-
-Scene getScene(uint8_t sceneIndex)
-{
-	return cScenes[sceneIndex];
-}
+/// The function to get a frame from this scene.
+///
+Frame getFrame(SceneData *data, FrameIndex frameIndex);
 
 
 }
+}
+

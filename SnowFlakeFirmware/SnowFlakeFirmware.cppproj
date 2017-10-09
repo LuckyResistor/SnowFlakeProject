@@ -255,6 +255,12 @@
     <Compile Include="src\SceneManager.hpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\scene\SimpleShift.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\scene\SimpleShift.hpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\scene\TestFlash.cpp">
       <SubType>compile</SubType>
     </Compile>

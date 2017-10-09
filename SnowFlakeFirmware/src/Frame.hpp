@@ -24,6 +24,12 @@
 #include "PixelMath.hpp"
 
 #include <cstdint>
+#include <functional>
+// workaround start
+#undef _U
+#undef _L
+#undef LITTLE_ENDIAN
+// workaround end
 
 
 /// The type used to represent a frame index.
@@ -48,6 +54,8 @@ public:
 	/// Create a frame with all pixels at a given value.
 	///
 	Frame(PixelMath::Value pixelValue);
+	
+	Frame(std::function<PixelMath::Value(uint8_t)> pixelFn);
 	
 	/// dtor
 	///

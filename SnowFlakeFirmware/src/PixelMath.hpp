@@ -22,6 +22,7 @@
 
 
 #include <cstdint>
+#include <cmath>
 
 
 /// Simple math for pixel calculations
@@ -43,6 +44,10 @@ inline Value invert(Value value) {
 	
 /// Put a value into the acceptable range.
 ///
+/// 5.0 => 1.0
+/// -3.0 => 0.0
+/// 0.5 => 0.5
+///
 inline Value limit(Value value) {
 	if (value < 0.0f) {
 		return 0.0f;
@@ -51,6 +56,17 @@ inline Value limit(Value value) {
 	} else {
 		return value;
 	}
+}
+
+/// Wrap a value into the acceptable range.
+///
+/// 3.3 => 0.3
+/// -0.5 => 0.5
+/// 0.5 => 0.5
+///
+inline Value wrap(Value value) {
+	Value intPart;
+	return std::modf(value, &intPart);
 }
 
 	
@@ -79,6 +95,18 @@ inline Value normalFromRange(T firstValue, T lastValue, T currentValue) {
 		const auto position = static_cast<Value>(currentValue-lastValue);
 		const auto length = static_cast<Value>(firstValue-lastValue);
 		return invert(position/length);
+	}
+}
+
+
+/// Convert a linear increment into up/down bounce.
+///
+inline Value bounceValue(Value value) {
+	auto scaledValue = value * 2.0f;
+	if (scaledValue < 1.0) {
+		return scaledValue;
+	} else {
+		return 2.0-scaledValue;
 	}
 }
 

@@ -18,41 +18,29 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "SceneManager.hpp"
+#include "TestFlash.hpp"
 
 
-#include "scene/TestFlash.hpp"
-#include "scene/SimpleShift.hpp"
+namespace scene {
+namespace SimpleShift {
 
 
-namespace SceneManager {
-
-
-#define LR_SCENE_ENTRY(name) Scene(scene::name::cFrameCount, &scene::name::initialize, &scene::name::getFrame)
-
-
-static Scene cScenes[] = {
-	LR_SCENE_ENTRY(SimpleShift),
-	LR_SCENE_ENTRY(TestFlash),
-};
-
-
-void initialize()
+void initialize(SceneData *data)
 {
-	// nothing to do.
+	// empty
 }
 
 
-uint8_t getSceneCount()
+Frame getFrame(SceneData *data, FrameIndex frameIndex)
 {
-	return 1;
+	return Frame([=](uint8_t pixelIndex)->PixelMath::Value{
+		return PixelMath::bounceValue(PixelMath::wrap(
+			PixelMath::normalFromRange<uint32_t>(0, 50, frameIndex) + 
+			PixelMath::normalFromRange<uint8_t>(0, Frame::cSize, pixelIndex)
+		));
+	});
 }
 
 
-Scene getScene(uint8_t sceneIndex)
-{
-	return cScenes[sceneIndex];
 }
-
-
 }

@@ -40,6 +40,14 @@ Frame::Frame(PixelMath::Value pixelValue)
 }
 
 
+Frame::Frame(std::function<PixelMath::Value(uint8_t)> pixelFn)
+{
+	for (uint8_t i = 0; i < cSize; ++i) {
+		this->pixelValue[i] = pixelFn(i);
+	}
+}
+
+
 Frame::~Frame()
 {
 }
