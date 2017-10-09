@@ -18,16 +18,29 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "sam.h"
-
-#include "Application.hpp"
+#include "TestFlash.hpp"
 
 
-/// The main method of the firmware.
-///
-int main(void)
+namespace scene {
+namespace TestFlash {
+
+
+void initialize(SceneData *data)
 {
-    SystemInit();
-	Application::initialize();
-	Application::loop();
+	// empty
+}
+
+
+Frame getFrame(SceneData *data, FrameIndex frameIndex)
+{
+	const auto halfFrameCount = cFrameCount/2;
+	if (frameIndex < halfFrameCount) {
+		return Frame(PixelMath::normalFromRange<FrameIndex>(0, halfFrameCount, frameIndex));
+	} else {
+		return Frame(PixelMath::normalFromRange<FrameIndex>(cFrameCount, halfFrameCount, frameIndex));			
+	}
+}
+
+
+}
 }

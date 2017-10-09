@@ -18,16 +18,47 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "sam.h"
-
-#include "Application.hpp"
+#pragma once
 
 
-/// The main method of the firmware.
+#include <cstdint>
+
+
+/// The display module
 ///
-int main(void)
-{
-    SystemInit();
-	Application::initialize();
-	Application::loop();
+namespace Display {
+
+
+/// The maximum level for the display
+///
+extern const uint8_t cMaximumLevel;
+
+/// The LED count.
+///
+extern const uint8_t cLedCount;
+
+
+/// Initialize the display module.
+///
+void initialize();
+
+/// Set the level for one single LED.
+///
+/// @param ledIndex The LED index from 0-18.
+/// @param level The LED brightness level from 0-64. 0 = dark, 64 = 100% on.
+///
+void setLedLevel(uint8_t ledIndex, uint8_t level);
+
+/// Show the current display buffer.
+///
+void show();
+
+/// Wait for the next frame and show.
+///
+/// At 250Hz, this is for a frame rate of ~31 fps, or every 32ms.
+///
+void synchronizeAndShow();
+
+	
 }
+

@@ -1,0 +1,95 @@
+//
+// Snow Flake Project
+// ---------------------------------------------------------------------------
+// (c)2017 by Lucky Resistor. See LICENSE for details.
+// https://luckyresistor.me
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//
+#pragma once
+
+
+#include "Frame.hpp"
+
+
+/// Private data area for a scene.
+///
+class SceneData
+{
+public:
+	/// The size of the data array.
+	///
+	static const uint8_t cSize = 4;
+	
+public:
+	/// Create a zero scene data structure.
+	///
+	SceneData();
+	
+public:	
+	union {
+		float floatData[cSize]; ///< Place to store float data.
+		uint32_t int32Data[cSize]; ///< Or alternatively store integer data.
+	};
+};
+
+
+/// The base class for a single scene for the snow flake.
+///
+/// A scene is a single effect which is displayed on the LEDs of the snow flake.
+///
+class Scene
+{
+public:
+	typedef void(*InitFn)(SceneData*);
+	typedef Frame(*GetFrameFn)(SceneData*, FrameIndex frameIndex);	
+
+public:
+	/// Create a new scene.
+	///
+	/// @param frameCount The frame count for this scene.
+	/// @param initSceneFn The function to initialize the scene data.
+	/// @param getFrameFn The function to get a new frame for the scene.
+	///
+	Scene(uint32_t frameCount, InitFn initFn, GetFrameFn getFrameFn);
+
+	/// Create a new scene.
+	///
+	/// @param frameCount The frame count for this scene.
+	/// @param getFrameFn The function to get a new frame for the scene.
+	///
+	Scene(uint32_t frameCount, GetFrameFn getFrameFn);
+	
+public:
+	/// Get the frame count.
+	///
+	inline uint32_t getFrameCount() const { return _frameCount; }
+
+	/// Initialize the given scene data.
+	///
+	void init(SceneData *data);
+	
+	/// Get a frame for this scene.
+	///
+	Frame getFrame(SceneData *data, FrameIndex frameIndex);
+	
+private:
+	const uint32_t _frameCount; ///< The frame count for this scene.
+	const InitFn _initFn; ///< The function to initialize the scene data.
+	const GetFrameFn _getFrameFn; ///< The function to get a new frame for this scene.
+};
+
+
+

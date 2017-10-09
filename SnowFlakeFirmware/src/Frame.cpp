@@ -18,16 +18,37 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "sam.h"
-
-#include "Application.hpp"
+#include "Frame.hpp"
 
 
-/// The main method of the firmware.
-///
-int main(void)
+#include "Display.hpp"
+
+#include <cstring>
+
+
+Frame::Frame()
 {
-    SystemInit();
-	Application::initialize();
-	Application::loop();
+	std::memset(&pixelValue, 0, sizeof(PixelMath::Value)*cSize);
 }
+
+
+Frame::Frame(PixelMath::Value pixelValue)
+{
+	for (uint8_t i = 0; i < cSize; ++i) {
+		this->pixelValue[i] = pixelValue;
+	}
+}
+
+
+Frame::~Frame()
+{
+}
+
+
+void Frame::writeToDisplay()
+{
+	for (uint8_t i = 0; i < cSize; ++i) {
+		Display::setLedLevel(i, PixelMath::convertToInt(pixelValue[i], Display::cMaximumLevel));
+	}	
+}
+

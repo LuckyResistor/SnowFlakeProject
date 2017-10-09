@@ -18,10 +18,10 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "Display.h"
+#include "Display.hpp"
 
 
-#include "Hardware.h"
+#include "Hardware.hpp"
 
 #include "sam.h"
 
@@ -104,6 +104,10 @@ uint8_t gDisplayBufferB[cLedCount];
 ///
 volatile BufferId gDisplayedBuffer = BufferA;
 	
+/// The frame counter for the display.
+///
+volatile uint8_t gFrameCounter = 0;
+	
 	
 void initialize()
 {
@@ -147,11 +151,6 @@ void initialize()
 }
 
 
-void setLedPinLevels(uint32_t outputMask)
-{
-}
-
-
 void setLedLevel(uint8_t ledIndex, uint8_t level)
 {
 	if (level > cMaximumLevel) {
@@ -174,6 +173,18 @@ void show()
 		gDisplayedBuffer = BufferA;
 		std::memcpy(gDisplayBufferB, gDisplayBufferA, sizeof(uint8_t)*cLedCount);
 	}
+}
+
+
+void synchronizeAndShow()
+{
+	// If we already are at the frame boundary, skip a frame.
+	if ((gFrameCounter&0b111) == 0) {
+		while ((gFrameCounter&0b111) == 0) {}; // wait
+	}
+	// Wait for the frame boundary.
+	while ((gFrameCounter&0b111)!=0) {}; // wait
+	show();
 }
 
 
@@ -242,6 +253,7 @@ void onInterrupt()
 	++gPwmCounter;
 	if (gPwmCounter>=cMaximumLevel) {
 		gPwmCounter = 0;
+		++gFrameCounter;
 	}
 }
 

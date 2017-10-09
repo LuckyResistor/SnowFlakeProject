@@ -18,16 +18,47 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "sam.h"
-
-#include "Application.hpp"
+#include "Scene.hpp"
 
 
-/// The main method of the firmware.
-///
-int main(void)
+#include <cstring>
+
+
+namespace {
+void emptyInitScene(SceneData*)
 {
-    SystemInit();
-	Application::initialize();
-	Application::loop();
+	// empty
+}	
 }
+
+
+SceneData::SceneData()
+{
+	std::memset(&int32Data, 0, sizeof(uint32_t)*cSize);
+}
+
+
+Scene::Scene(uint32_t frameCount, InitFn initFn, GetFrameFn getFrameFn)
+	: _frameCount(frameCount), _initFn(initFn), _getFrameFn(getFrameFn)
+{
+}
+
+
+Scene::Scene(uint32_t frameCount, GetFrameFn getFrameFn)
+	: _frameCount(frameCount), _initFn(&emptyInitScene), _getFrameFn(getFrameFn)
+{
+}
+
+
+void Scene::init(SceneData *data)
+{
+	(*_initFn)(data);
+}
+
+
+Frame Scene::getFrame(SceneData *data, FrameIndex frameIndex)
+{
+	return (*_getFrameFn)(data, frameIndex);
+}
+
+

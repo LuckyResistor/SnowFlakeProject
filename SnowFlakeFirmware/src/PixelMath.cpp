@@ -18,16 +18,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "sam.h"
-
-#include "Application.hpp"
+#include "PixelMath.hpp"
 
 
-/// The main method of the firmware.
-///
-int main(void)
-{
-    SystemInit();
-	Application::initialize();
-	Application::loop();
-}
+// empty

@@ -18,16 +18,48 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "sam.h"
-
-#include "Application.hpp"
+#pragma once
 
 
-/// The main method of the firmware.
+#include "PixelMath.hpp"
+
+#include <cstdint>
+
+
+/// The type used to represent a frame index.
 ///
-int main(void)
+typedef uint32_t FrameIndex;
+
+
+/// A single frame of a scene.
+///
+/// A frame is the configuration for all pixels at one point in time.
+///
+class Frame
 {
-    SystemInit();
-	Application::initialize();
-	Application::loop();
-}
+public:
+	static const uint8_t cSize = 19;
+	
+public:
+	/// Create a black frame.
+	///
+	Frame();
+	
+	/// Create a frame with all pixels at a given value.
+	///
+	Frame(PixelMath::Value pixelValue);
+	
+	/// dtor
+	///
+	~Frame();
+	
+public:
+	/// Write this frame to the display buffer.
+	///
+	void writeToDisplay();	
+
+public:
+	/// The LED level for all LEDs in the range from 0.0-1.0.
+	///
+	PixelMath::Value pixelValue[cSize];
+};

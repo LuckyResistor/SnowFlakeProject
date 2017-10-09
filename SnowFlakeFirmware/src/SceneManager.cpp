@@ -18,16 +18,39 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "sam.h"
-
-#include "Application.hpp"
+#include "SceneManager.hpp"
 
 
-/// The main method of the firmware.
-///
-int main(void)
+#include "scene/TestFlash.hpp"
+
+
+namespace SceneManager {
+
+
+#define LR_SCENE_ENTRY(name) Scene(scene::name::cFrameCount, &scene::name::initialize, &scene::name::getFrame)
+
+
+static Scene cScenes[] = {
+	LR_SCENE_ENTRY(TestFlash),
+};
+
+
+void initialize()
 {
-    SystemInit();
-	Application::initialize();
-	Application::loop();
+	// nothing to do.
+}
+
+
+uint8_t getSceneCount()
+{
+	return 1;
+}
+
+
+Scene getScene(uint8_t sceneIndex)
+{
+	return cScenes[sceneIndex];
+}
+
+
 }

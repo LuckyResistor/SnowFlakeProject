@@ -18,13 +18,15 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "Application.h"
+#include "Application.hpp"
 
 
-#include "Communication.h"
-#include "Display.h"
-#include "Hardware.h"
-#include "Helper.h"
+#include "Communication.hpp"
+#include "Display.hpp"
+#include "Hardware.hpp"
+#include "Helper.hpp"
+#include "SceneManager.hpp"
+#include "Scene.hpp"
 
 #include "sam.h"
 
@@ -38,22 +40,21 @@ void initialize()
 	Helper::initialize();
 	Display::initialize();
 	Communication::initialize();
+	SceneManager::initialize();
 }
 
 
 void loop()
 {
+	auto scene = SceneManager::getScene(0);
+	SceneData sceneData;
+	scene.init(&sceneData);
 	while (true) {
-		for (uint8_t i = 0; i < 0x80; ++i) {
-			for (uint8_t j = 0; j < Display::cLedCount; ++j) {
-				uint8_t level = (i + (5*j)) & 0x7f;
-				if (level >= 0x40) {
-					level = 0x80 - level;
-				}
-				Display::setLedLevel(j, level);
-			}
-			Display::show();
-			Helper::delayNop(500000);
+		const FrameIndex frameCount = scene.getFrameCount();
+		for (FrameIndex frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
+			auto frame = scene.getFrame(&sceneData, frameIndex);
+			frame.writeToDisplay();
+			Display::synchronizeAndShow();
 		}
 	}
 }

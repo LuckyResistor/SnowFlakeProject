@@ -18,16 +18,29 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "sam.h"
-
-#include "Application.hpp"
+#pragma once
 
 
-/// The main method of the firmware.
+#include "Scene.hpp"
+
+
+/// A manager for all registered scenes.
 ///
-int main(void)
-{
-    SystemInit();
-	Application::initialize();
-	Application::loop();
+namespace SceneManager {
+
+
+/// Initialize the scene manager.
+///
+void initialize();
+
+/// Get the number of registered scenes.
+///
+uint8_t getSceneCount();
+
+/// Create the scene with the given index.
+///
+Scene getScene(uint8_t sceneIndex);
+
+
 }
+
