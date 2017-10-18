@@ -18,55 +18,33 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "Frame.hpp"
+#pragma once
 
 
-#include "Display.hpp"
-
-#include <cstring>
+#include "../Scene.hpp"
 
 
-Frame::Frame()
-{
-	std::memset(&pixelValue, 0, sizeof(PixelMath::Value)*cSize);
+/// \namespace scene::IceSparkle
+/// An effect similar to sunlight sparkle in ice.
+
+
+namespace scene {
+namespace IceSparkle {
+
+
+/// The number of frames for this scene
+///
+const uint32_t cFrameCount = 50;
+
+/// The function to initialize this scene.
+///
+void initialize(SceneData *data);
+
+/// The function to get a frame from this scene.
+///
+Frame getFrame(SceneData *data, FrameIndex frameIndex);
+
+
 }
-
-
-Frame::Frame(PixelMath::Value pixelValue)
-{
-	for (uint8_t i = 0; i < cSize; ++i) {
-		this->pixelValue[i] = pixelValue;
-	}
-}
-
-
-Frame::Frame(std::function<PixelMath::Value(uint8_t)> pixelFn)
-{
-	for (uint8_t i = 0; i < cSize; ++i) {
-		this->pixelValue[i] = pixelFn(i);
-	}
-}
-
-
-Frame::~Frame()
-{
-}
-
-
-void Frame::writeToDisplay()
-{
-	for (uint8_t i = 0; i < cSize; ++i) {
-		Display::setLedLevel(i, PixelMath::convertToInt(pixelValue[i], Display::cMaximumLevel));
-	}	
-}
-
-
-void Frame::blendTo(const Frame &frame, float factor)
-{
-	const float factorA = 1.0f - factor;
-	const float factorB = factor;
-	for (uint8_t i = 0; i < cSize; ++i) {
-		pixelValue[i] = (pixelValue[i]*factorA + frame.pixelValue[i]*factorB);
-	}
 }
 

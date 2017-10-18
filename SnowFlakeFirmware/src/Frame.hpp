@@ -25,11 +25,6 @@
 
 #include <cstdint>
 #include <functional>
-// workaround start
-#undef _U
-#undef _L
-#undef LITTLE_ENDIAN
-// workaround end
 
 
 /// The type used to represent a frame index.
@@ -55,6 +50,11 @@ public:
 	///
 	Frame(PixelMath::Value pixelValue);
 	
+	/// Create a frame, using the given function.
+	///
+	/// The function is called for each pixel, which is passed as the only argument.
+	/// It has to return the pixel value.
+	///
 	Frame(std::function<PixelMath::Value(uint8_t)> pixelFn);
 	
 	/// dtor
@@ -64,7 +64,14 @@ public:
 public:
 	/// Write this frame to the display buffer.
 	///
-	void writeToDisplay();	
+	void writeToDisplay();
+	
+	/// Blend this frame with another one.
+	///
+	/// @param frame The other frame to blend into.
+	/// @param factor The blend factor. 0.0 = keep original, 1.0 = only the given frame.
+	///
+	void blendTo(const Frame &frame, float factor);
 
 public:
 	/// The LED level for all LEDs in the range from 0.0-1.0.

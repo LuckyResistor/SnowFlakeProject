@@ -18,7 +18,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "TestFlash.hpp"
+#include "SimpleShift.hpp"
 
 
 namespace scene {
@@ -35,7 +35,7 @@ Frame getFrame(SceneData *data, FrameIndex frameIndex)
 {
 	return Frame([=](uint8_t pixelIndex)->PixelMath::Value{
 		return PixelMath::bounceValue(PixelMath::wrap(
-			PixelMath::normalFromRange<uint32_t>(0, 50, frameIndex) + 
+			PixelMath::normalFromRange<uint32_t>(0, cFrameCount, frameIndex) + 
 			PixelMath::normalFromRange<uint8_t>(0, Frame::cSize, pixelIndex)
 		));
 	});

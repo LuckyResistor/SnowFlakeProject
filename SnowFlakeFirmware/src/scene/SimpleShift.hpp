@@ -34,7 +34,7 @@ namespace SimpleShift {
 
 /// The number of frames for this scene
 ///
-const uint32_t cFrameCount = 50;
+const uint32_t cFrameCount = 150;
 
 /// The function to initialize this scene.
 ///

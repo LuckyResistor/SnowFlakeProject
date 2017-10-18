@@ -37,9 +37,9 @@ void initialize();
 ///
 uint8_t getSceneCount();
 
-/// Create the scene with the given index.
+/// Get a scene with the given name.
 ///
-Scene getScene(uint8_t sceneIndex);
+Scene getScene(Scene::Name sceneName);
 
 
 }

@@ -31,12 +31,17 @@ class SceneData
 public:
 	/// The size of the data array.
 	///
-	static const uint8_t cSize = 4;
+	static const uint8_t cSize = 32;
 	
 public:
 	/// Create a zero scene data structure.
 	///
 	SceneData();
+	
+public:
+	/// Clear existing scene data.
+	///
+	void clear();
 	
 public:	
 	union {
@@ -53,24 +58,46 @@ public:
 class Scene
 {
 public:
+	/// An enumeration to name all defined scenes in this firmware.
+	///
+	enum Name : uint8_t {
+		Black,
+		IceSparkle,
+		SimpleShift,
+		TestFlash
+	};
+	
+public:
+	/// Function pointer to the initialization function.
+	///
 	typedef void(*InitFn)(SceneData*);
+	
+	/// Function pointer to the `getFrame` function.
+	///
 	typedef Frame(*GetFrameFn)(SceneData*, FrameIndex frameIndex);	
 
 public:
+	/// Create a empty scene.
+	///
+	/// This is a non functional scene, used as placeholder.
+	///
+	Scene();
+	
 	/// Create a new scene.
 	///
-	/// @param frameCount The frame count for this scene.
+	/// @param frameCount The frame count for this scene. Has to be >0.
 	/// @param initSceneFn The function to initialize the scene data.
 	/// @param getFrameFn The function to get a new frame for the scene.
 	///
 	Scene(uint32_t frameCount, InitFn initFn, GetFrameFn getFrameFn);
-
-	/// Create a new scene.
+	
+	/// Copy constructor
 	///
-	/// @param frameCount The frame count for this scene.
-	/// @param getFrameFn The function to get a new frame for the scene.
+	Scene(const Scene &copy);
+	
+	/// Assign operator.
 	///
-	Scene(uint32_t frameCount, GetFrameFn getFrameFn);
+	const Scene& operator=(const Scene &assign);
 	
 public:
 	/// Get the frame count.
@@ -86,9 +113,9 @@ public:
 	Frame getFrame(SceneData *data, FrameIndex frameIndex);
 	
 private:
-	const uint32_t _frameCount; ///< The frame count for this scene.
-	const InitFn _initFn; ///< The function to initialize the scene data.
-	const GetFrameFn _getFrameFn; ///< The function to get a new frame for this scene.
+	uint32_t _frameCount; ///< The frame count for this scene.
+	InitFn _initFn; ///< The function to initialize the scene data.
+	GetFrameFn _getFrameFn; ///< The function to get a new frame for this scene.
 };
 
 

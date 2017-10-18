@@ -23,7 +23,7 @@
 
 #include "Helper.hpp"
 
-#include "sam.h"
+#include "Chip.hpp"
 
 
 namespace Hardware {

@@ -23,7 +23,7 @@
 
 #include "Hardware.hpp"
 
-#include "sam.h"
+#include "Chip.hpp"
 
 #include <cstring>
 

@@ -21,19 +21,38 @@
 #include "SceneManager.hpp"
 
 
+#include "scene/Black.hpp"
 #include "scene/TestFlash.hpp"
 #include "scene/SimpleShift.hpp"
+#include "scene/IceSparkle.hpp"
 
 
 namespace SceneManager {
 
 
-#define LR_SCENE_ENTRY(name) Scene(scene::name::cFrameCount, &scene::name::initialize, &scene::name::getFrame)
+/// A simple structure for a scene entry.
+///
+typedef struct {
+	const Scene::Name name; ///< The name for this scene.
+	const uint32_t frameCount; ///< The frame count for this scene.
+	const Scene::InitFn initFn; ///< The function to initialize the scene data.
+	const Scene::GetFrameFn getFrameFn; ///< The function to get a new frame for this scene.
+} SceneEntry;
 
 
-static Scene cScenes[] = {
+/// Macro to simple define the scenes from the name.
+///
+#define LR_SCENE_ENTRY(name) {Scene::name, scene::name::cFrameCount, &scene::name::initialize, &scene::name::getFrame}
+
+
+/// A static array with all registered scenes in this firmware.
+///
+const SceneEntry cScenes[] __aligned(4) = {
+	LR_SCENE_ENTRY(Black),
 	LR_SCENE_ENTRY(SimpleShift),
+	LR_SCENE_ENTRY(IceSparkle),
 	LR_SCENE_ENTRY(TestFlash),
+	{Scene::Black, 0, nullptr, nullptr} // The end mark.
 };
 
 
@@ -45,13 +64,30 @@ void initialize()
 
 uint8_t getSceneCount()
 {
-	return 1;
+	static uint8_t sceneCount = 0;
+	if (sceneCount == 0) {
+		const SceneEntry *entry = cScenes;
+		while (entry->frameCount > 0) {
+			++sceneCount;
+			++entry;
+		}
+	}
+	return sceneCount;
 }
 
 
-Scene getScene(uint8_t sceneIndex)
+Scene getScene(Scene::Name sceneName)
 {
-	return cScenes[sceneIndex];
+	// Iterate through all scenes and return the matching one.
+	const SceneEntry *entry = cScenes;
+	do {
+		if (entry->name == sceneName) {
+			return Scene(entry->frameCount, entry->initFn, entry->getFrameFn);
+		}
+		++entry;
+	} while (entry->frameCount > 0);
+	// If for unknown reasons the searched scene is not found, just use the first one.
+	return Scene(cScenes[0].frameCount, cScenes[0].initFn, cScenes[0].getFrameFn);
 }
 
 

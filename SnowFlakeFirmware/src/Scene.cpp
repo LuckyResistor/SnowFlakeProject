@@ -29,6 +29,10 @@ void emptyInitScene(SceneData*)
 {
 	// empty
 }	
+Frame emptyGetFrame(SceneData*, FrameIndex)
+{
+	return Frame();
+}
 }
 
 
@@ -38,15 +42,36 @@ SceneData::SceneData()
 }
 
 
+void SceneData::clear()
+{
+	std::memset(&int32Data, 0, sizeof(uint32_t)*cSize);
+}
+
+
+Scene::Scene()
+	: _frameCount(10), _initFn(&emptyInitScene), _getFrameFn(&emptyGetFrame)
+{
+}
+
+
 Scene::Scene(uint32_t frameCount, InitFn initFn, GetFrameFn getFrameFn)
 	: _frameCount(frameCount), _initFn(initFn), _getFrameFn(getFrameFn)
 {
 }
 
 
-Scene::Scene(uint32_t frameCount, GetFrameFn getFrameFn)
-	: _frameCount(frameCount), _initFn(&emptyInitScene), _getFrameFn(getFrameFn)
+Scene::Scene(const Scene &copy)
+	: _frameCount(copy._frameCount), _initFn(copy._initFn), _getFrameFn(copy._getFrameFn)
 {
+}
+
+
+const Scene& Scene::operator=(const Scene &assign)
+{
+	_frameCount = assign._frameCount;
+	_initFn = assign._initFn;
+	_getFrameFn = assign._getFrameFn;
+	return assign;
 }
 
 

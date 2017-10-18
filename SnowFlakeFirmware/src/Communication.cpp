@@ -21,9 +21,7 @@
 #include "Communication.hpp"
 
 
-#include "Display.hpp" // DEBUG
-
-#include "sam.h"
+#include "Chip.hpp"
 
 
 namespace Communication {

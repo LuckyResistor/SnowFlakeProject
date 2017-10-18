@@ -27,8 +27,9 @@
 #include "Helper.hpp"
 #include "SceneManager.hpp"
 #include "Scene.hpp"
+#include "Player.hpp"
 
-#include "sam.h"
+#include "Chip.hpp"
 
 
 namespace Application {
@@ -41,21 +42,22 @@ void initialize()
 	Display::initialize();
 	Communication::initialize();
 	SceneManager::initialize();
+	Player::initialize();
+
+	// Fade the first scene from black.
+	Player::displayScene(Scene::Black);
+	Player::blendToScene(Scene::SimpleShift, 150);
+	while (Player::getState() == Player::State::Blend) {
+		Player::animate();
+	}
 }
 
 
 void loop()
 {
-	auto scene = SceneManager::getScene(0);
-	SceneData sceneData;
-	scene.init(&sceneData);
+	// Common animation.
 	while (true) {
-		const FrameIndex frameCount = scene.getFrameCount();
-		for (FrameIndex frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
-			auto frame = scene.getFrame(&sceneData, frameIndex);
-			frame.writeToDisplay();
-			Display::synchronizeAndShow();
-		}
+		Player::animate();
 	}
 }
 
