@@ -40,5 +40,15 @@ void delayNop(uint32_t cycles);
 /// Delay using the SysTick for longer delays.
 ///
 void delayMs(uint32_t delay);
-	
+
+/// Get the current system time.
+///
+uint32_t getSystemTimeMs();
+
+/// Wait until the system time reaches the given value.
+///
+void waitForSystemTime(uint32_t systemTime);
+
+
 }
+

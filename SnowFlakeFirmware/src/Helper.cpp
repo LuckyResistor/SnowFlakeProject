@@ -60,6 +60,18 @@ void delayMs(uint32_t delay)
 }
 
 
+uint32_t getSystemTimeMs()
+{
+	return gTickCounter;
+}
+
+
+void waitForSystemTime(uint32_t systemTime)
+{
+	while (gTickCounter != systemTime) {}
+}
+
+
 }
 
 

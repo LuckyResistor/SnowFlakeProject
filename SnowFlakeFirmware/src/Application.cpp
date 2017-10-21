@@ -34,9 +34,40 @@
 
 namespace Application {
 	
+	
+/// The scenes to display.
+///
+const Scene::Name cScenesOnDisplay[] = {
+	Scene::SimpleRotation,
+	Scene::SimpleShift,
+	Scene::TestFlash
+};
+
+/// The number of scenes to display.
+///
+const uint8_t cScenesOnDisplayCount = sizeof(cScenesOnDisplay)/sizeof(Scene::Name);
+
+/// Duration of a scene blend in frames.
+///
+const uint32_t cBlendDuration = 80;
+
+/// Duration how long a scene is shown in milliseconds.
+///
+const uint32_t cSceneDuration = 20000;
+	
+
+/// The currently displayed scene
+///
+uint8_t gCurrentSceneIndex = 0;
+
+/// The time of the last scene switch.
+///
+uint32_t gLastSceneBlend = 0;
+
 
 void initialize()
 {
+	// Initialize all modules.
 	Hardware::initialize();
 	Helper::initialize();
 	Display::initialize();
@@ -44,20 +75,33 @@ void initialize()
 	SceneManager::initialize();
 	Player::initialize();
 
-	// Fade the first scene from black.
+	// Blend to the first scene from black.
 	Player::displayScene(Scene::Black);
-	Player::blendToScene(Scene::SimpleRotation, 150);
+	Player::blendToScene(cScenesOnDisplay[gCurrentSceneIndex], cBlendDuration);
 	while (Player::getState() == Player::State::Blend) {
 		Player::animate();
 	}
+	
+	// Get the current time as initial scene blend time.
+	gLastSceneBlend = Helper::getSystemTimeMs();
 }
 
 
 void loop()
 {
-	// Common animation.
 	while (true) {
+		// Animate the current scene.
 		Player::animate();
+		// Check if it's time to blend to the next scene.
+		const uint32_t systemTime = Helper::getSystemTimeMs();
+		if ((systemTime - gLastSceneBlend) >= cSceneDuration) {
+			++gCurrentSceneIndex;
+			if (gCurrentSceneIndex >= cScenesOnDisplayCount) {
+				gCurrentSceneIndex = 0;
+			}
+			Player::blendToScene(cScenesOnDisplay[gCurrentSceneIndex], cBlendDuration);
+			gLastSceneBlend = systemTime;	
+		}
 	}
 }
 

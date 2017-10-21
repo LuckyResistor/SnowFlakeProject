@@ -46,9 +46,9 @@ enum class TraceOutputSource : uint8_t {
 
 /// The configuration for the trace outputs pins.
 ///
-const TraceOutputPins cTraceOutputPins = TraceOutputPins::DataLines; // Disabled for production.
+const TraceOutputPins cTraceOutputPins = TraceOutputPins::Disabled; // Disabled for production.
 
 /// The configuration for the trace output source.
 ///
-const TraceOutputSource cTraceOutputSource = TraceOutputSource::FrameClaculationTime; // Disabled for production.
+const TraceOutputSource cTraceOutputSource = TraceOutputSource::Disabled; // Disabled for production.
 
