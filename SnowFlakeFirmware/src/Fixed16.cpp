@@ -32,6 +32,7 @@ namespace {
 const Fixed16::Type cMaximumValue = 0x7FFFFFFF; ///< The maximum value.
 const Fixed16::Type cMinimumValue = 0x80000000; ///< The minimum value.
 const Fixed16::Type cOverflowValue = 0x80000000; ///< The value used to indicate overflows.
+const Fixed16::Type cOneValue = 0x00010000; ///< The value for one.
 
 	
 Fixed16::Type fixedAdd(Fixed16::Type a, Fixed16::Type b)
@@ -283,6 +284,12 @@ bool Fixed16::operator>=(const Fixed16 &other) const
 bool Fixed16::operator>(const Fixed16 &other) const
 {
 	return (_value > other._value);
+}
+
+
+float Fixed16::toFloat() const
+{
+	return static_cast<float>(_value)/static_cast<float>(cOneValue);
 }
 
 

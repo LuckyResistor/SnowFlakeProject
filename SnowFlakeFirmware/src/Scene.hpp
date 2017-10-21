@@ -64,6 +64,7 @@ public:
 		Black,
 		IceSparkle,
 		SimpleShift,
+		SimpleRotation,
 		TestFlash
 	};
 	

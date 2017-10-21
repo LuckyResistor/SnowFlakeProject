@@ -18,48 +18,33 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "Application.hpp"
+#pragma once
 
 
-#include "Communication.hpp"
-#include "Display.hpp"
-#include "Hardware.hpp"
-#include "Helper.hpp"
-#include "SceneManager.hpp"
-#include "Scene.hpp"
-#include "Player.hpp"
-
-#include "Chip.hpp"
+#include "../Scene.hpp"
 
 
-namespace Application {
-	
-
-void initialize()
-{
-	Hardware::initialize();
-	Helper::initialize();
-	Display::initialize();
-	Communication::initialize();
-	SceneManager::initialize();
-	Player::initialize();
-
-	// Fade the first scene from black.
-	Player::displayScene(Scene::Black);
-	Player::blendToScene(Scene::SimpleRotation, 150);
-	while (Player::getState() == Player::State::Blend) {
-		Player::animate();
-	}
-}
+/// \namespace scene::SimpleShift
+/// A simple rotating scene.
 
 
-void loop()
-{
-	// Common animation.
-	while (true) {
-		Player::animate();
-	}
-}
+namespace scene {
+namespace SimpleRotation {
+
+
+/// The number of frames for this scene
+///
+const uint32_t cFrameCount = 200;
+
+/// The function to initialize this scene.
+///
+void initialize(SceneData *data);
+
+/// The function to get a frame from this scene.
+///
+Frame getFrame(SceneData *data, FrameIndex frameIndex);
 
 
 }
+}
+

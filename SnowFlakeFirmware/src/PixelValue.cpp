@@ -35,14 +35,14 @@ PixelValue::PixelValue(Fixed16 value)
 
 PixelValue& PixelValue::operator=(const Fixed16 &other)
 {
-	_value = other.value();
+	_value = other.toRawValue();
 	return *this;
 }
 
 
 PixelValue& PixelValue::operator=(const PixelValue &other)
 {
-	_value = other.value();
+	_value = other.toRawValue();
 	return *this;
 }
 
@@ -85,13 +85,13 @@ PixelValue PixelValue::limited() const
 
 PixelValue PixelValue::wrapped() const
 {
-	return PixelValue(value() & 0x0000ffff);
+	return getFraction();
 }
 
 
 uint8_t PixelValue::convertToRange64() const
 {
-	return static_cast<uint8_t>(value() >> 10);
+	return static_cast<uint8_t>(toRawValue() >> 10);
 }
 
 

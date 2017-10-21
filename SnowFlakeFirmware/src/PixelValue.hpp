@@ -63,11 +63,6 @@ public:
 	///
 	PixelValue& operator=(const Fixed16 &other);
 
-public: // Conversion
-	/// Convert the pixel value back to a Fixed16
-	///
-	operator Fixed16() const { return Fixed16(value()); }
-
 public: // Constants
 	static constexpr PixelValue maximum();
 	static constexpr PixelValue minimum();

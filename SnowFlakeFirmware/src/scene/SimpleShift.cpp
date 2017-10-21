@@ -34,7 +34,7 @@ void initialize(SceneData*)
 Frame getFrame(SceneData*, FrameIndex frameIndex)
 {
 	return Frame([=](uint8_t pixelIndex)->PixelValue{
-		const auto value = PixelValue::normalFromRange(0u, 50u, frameIndex) + PixelValue::normalFromRange(0u, Frame::cSize, pixelIndex);
+		const auto value = PixelValue::normalFromRange(0u, cFrameCount, frameIndex) + PixelValue::normalFromRange(0u, Frame::cSize, pixelIndex);
 		return value.wrapped().bounced();
 	});
 }

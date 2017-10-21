@@ -91,11 +91,76 @@ public: // Constants
 	static constexpr Fixed16 maximum() { return Fixed16(static_cast<Type>(0x7FFFFFFF)); }
 	static constexpr Fixed16 overflow() { return Fixed16(static_cast<Type>(0x80000000)); }
 
-public: // Helper
+public: // Checks
+	/// Check if this value is zero
+	///
+	bool isZero() const {
+		return _value == 0;
+	}
+	
+public: // Math
+	/// Get the absolute value.
+	///
+	inline Fixed16 getAbsolute() const {
+		return Fixed16(_value < 0 ? -_value : _value);
+	}
+	
+	/// Get the floor value.
+	///
+	inline Fixed16 getFloor() const {
+		return Fixed16(static_cast<Type>(_value & 0xffff0000u));
+	}
+	
+	/// Get the ceil value.
+	///
+	inline Fixed16 getCeiling() const {
+		return Fixed16(static_cast<Type>((_value & 0xFFFF0000UL) + (((_value & 0x0000FFFFUL) != 0)?0x00010000:0x00000000)));
+	}
+
+	/// Get just the fraction.
+	///
+	inline Fixed16 getFraction() const {
+		return Fixed16(static_cast<Type>(_value & 0x0000ffffu));
+	}
+	
+	/// Get the minimum from this and the other value.
+	///
+	inline Fixed16 getMinimum(const Fixed16 &other) const {
+		return Fixed16((_value < other._value) ? _value : other._value);
+	}
+	
+	/// Get the maximum from this and the other value.
+	///
+	inline Fixed16 getMaximum(const Fixed16 &other) const {
+		return Fixed16((_value > other._value) ? _value : other._value);
+	}
+	
+	/// Clamp this value to the selected range.
+	///
+	inline Fixed16 getClamped(const Fixed16 &minimum, const Fixed16 &maximum) const {
+		return (*this).getMinimum(maximum).getMaximum(minimum);
+	}
+
+public: // Conversions
 	/// Access the raw value.
 	///
-	inline Type value() const { return _value; }
+	inline Type toRawValue() const { return _value; }
+
+	/// Get the integer part of this value.
+	///
+	inline int16_t toRawInteger() const { return (_value >> 16); }
+		
+	/// Get the fraction part of this value.
+	///
+	inline uint16_t toRawFraction() const {
+		return static_cast<uint16_t>(_value & 0x0000ffffu);
+	}
+
+	/// Get a float value.
+	///
+	float toFloat() const;
 
 protected:
 	Type _value;
 };
+
