@@ -25,20 +25,15 @@ namespace scene {
 namespace TestFlash {
 
 
-void initialize(SceneData *data)
+void initialize(SceneData*)
 {
 	// empty
 }
 
 
-Frame getFrame(SceneData *data, FrameIndex frameIndex)
+Frame getFrame(SceneData*, FrameIndex frameIndex)
 {
-	const auto halfFrameCount = cFrameCount/2;
-	if (frameIndex < halfFrameCount) {
-		return Frame(PixelMath::normalFromRange<FrameIndex>(0, halfFrameCount, frameIndex));
-	} else {
-		return Frame(PixelMath::normalFromRange<FrameIndex>(cFrameCount, halfFrameCount, frameIndex));			
-	}
+	return Frame(PixelValue::normalFromRange(0u, cFrameCount, frameIndex).bounced());
 }
 
 

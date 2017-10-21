@@ -25,13 +25,13 @@ namespace scene {
 namespace Black {
 
 
-void initialize(SceneData *data)
+void initialize(SceneData*)
 {
 	// empty
 }
 
 
-Frame getFrame(SceneData *data, FrameIndex frameIndex)
+Frame getFrame(SceneData*, FrameIndex)
 {
 	return Frame();
 }

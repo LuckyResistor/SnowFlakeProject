@@ -21,6 +21,8 @@
 #include "Communication.hpp"
 
 
+#include "Configuration.hpp"
+
 #include "Chip.hpp"
 
 
@@ -155,6 +157,11 @@ void setHardwareCommunicationBackward()
 
 void initialize()
 {
+	// Disable the communication module if the data lines are used for tracing.
+	if (cTraceOutputPins == TraceOutputPins::DataLines) {
+		return;
+	}
+	
 	setHardwareCommunicationForward();
 	
 	// Configure the external interrupt to capture all input data.
@@ -251,12 +258,22 @@ uint8_t getStandLength()
 
 void sendData(uint32_t data)
 {
+	// Disable the communication module if the data lines are used for tracing.
+	if (cTraceOutputPins == TraceOutputPins::DataLines) {
+		return;
+	}
+
 	// FIXME!
 }
 
 
 void sendSynchronization()
 {
+	// Disable the communication module if the data lines are used for tracing.
+	if (cTraceOutputPins == TraceOutputPins::DataLines) {
+		return;
+	}
+
 	// FIXME!
 }
 

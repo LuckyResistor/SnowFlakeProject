@@ -21,7 +21,7 @@
 #pragma once
 
 
-#include "PixelMath.hpp"
+#include "PixelValue.hpp"
 
 #include <cstdint>
 #include <functional>
@@ -48,14 +48,14 @@ public:
 	
 	/// Create a frame with all pixels at a given value.
 	///
-	Frame(PixelMath::Value pixelValue);
+	Frame(PixelValue pixelValue);
 	
 	/// Create a frame, using the given function.
 	///
 	/// The function is called for each pixel, which is passed as the only argument.
 	/// It has to return the pixel value.
 	///
-	Frame(std::function<PixelMath::Value(uint8_t)> pixelFn);
+	Frame(std::function<PixelValue(uint8_t)> pixelFn);
 	
 	/// dtor
 	///
@@ -71,10 +71,10 @@ public:
 	/// @param frame The other frame to blend into.
 	/// @param factor The blend factor. 0.0 = keep original, 1.0 = only the given frame.
 	///
-	void blendTo(const Frame &frame, float factor);
+	void blendTo(const Frame &frame, Fixed16 factor);
 
 public:
 	/// The LED level for all LEDs in the range from 0.0-1.0.
 	///
-	PixelMath::Value pixelValue[cSize];
+	PixelValue pixelValue[cSize];
 };

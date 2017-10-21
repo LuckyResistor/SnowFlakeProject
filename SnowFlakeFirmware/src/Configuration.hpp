@@ -21,41 +21,34 @@
 #pragma once
 
 
-#include <cstdint>
-
-
-/// The hardware abstraction layer
+/// The configuration for trace outputs.
 ///
-namespace Hardware {
+enum class TraceOutputPins : uint8_t {
+	Disabled = 0, ///< The trace output is disabled.
+	DataLines = 1, ///< The trace output is routed to the data-in and data-out lines.
+	PA27_28 = 2 ///< The trace output is routed to the PA27 and PA28 pins (pin 25 + 27).
+};
 
-
-/// Initialize the MCU hardware.
+/// The source for the output signals.
 ///
-void initialize();	
-
-
-/// Set trace output A to high state.
-///
-void setTraceOutputA();
-
-/// Set trace output A to low state.
-///
-void clearTraceOutputA();
-
-/// Toggle trace output A.
-///
-void toggleTraceOutputA();
-
-/// Set trace output B to high state.
-///
-void setTraceOutputB();
-
-/// Set trace output B to low state.
-///
-void clearTraceOutputB();
-
-/// Toggle trace output B
-///
-void toggleTraceOutputB();
+enum class TraceOutputSource : uint8_t {
 	
-}
+	/// The trace output is disabled.
+	///
+	Disabled, 
+	
+	/// Output A is set to high while a new frame is calculated.
+	/// Output B is set to high at the frame synchronization.
+	///
+	FrameClaculationTime, 
+};
+
+
+/// The configuration for the trace outputs pins.
+///
+const TraceOutputPins cTraceOutputPins = TraceOutputPins::DataLines; // Disabled for production.
+
+/// The configuration for the trace output source.
+///
+const TraceOutputSource cTraceOutputSource = TraceOutputSource::FrameClaculationTime; // Disabled for production.
+

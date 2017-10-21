@@ -25,19 +25,17 @@ namespace scene {
 namespace IceSparkle {
 
 
-void initialize(SceneData *data)
+void initialize(SceneData*)
 {
 	// empty
 }
 
 
-Frame getFrame(SceneData *data, FrameIndex frameIndex)
+Frame getFrame(SceneData*, FrameIndex frameIndex)
 {
-	return Frame([=](uint8_t pixelIndex)->PixelMath::Value{
-		return PixelMath::bounceValue(PixelMath::wrap(
-			PixelMath::normalFromRange<uint32_t>(0, 50, frameIndex) + 
-			PixelMath::normalFromRange<uint8_t>(0, Frame::cSize, pixelIndex)
-		));
+	return Frame([=](uint8_t pixelIndex)->PixelValue{
+		const auto value = PixelValue::normalFromRange(0u, 50u, frameIndex) + PixelValue::normalFromRange(0u, Frame::cSize, pixelIndex);
+		return value.wrapped().bounced();
 	});
 }
 

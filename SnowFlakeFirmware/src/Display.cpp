@@ -21,6 +21,7 @@
 #include "Display.hpp"
 
 
+#include "Configuration.hpp"
 #include "Hardware.hpp"
 
 #include "Chip.hpp"
@@ -185,6 +186,10 @@ void synchronizeAndShow()
 	// Wait for the frame boundary.
 	while ((gFrameCounter&0b111)!=0) {}; // wait
 	show();
+	// Toggle trace output B if this is the first frame.
+	if (cTraceOutputSource == TraceOutputSource::FrameClaculationTime) {
+		Hardware::toggleTraceOutputB();
+	}
 }
 
 

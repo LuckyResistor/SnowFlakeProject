@@ -21,12 +21,30 @@
 #include "Hardware.hpp"
 
 
+#include "Configuration.hpp"
 #include "Helper.hpp"
 
 #include "Chip.hpp"
 
 
 namespace Hardware {
+
+
+/// The trace output masks for output A.
+///
+const uint32_t cTraceOutputAMasks[] = {0, 1<<15, 1<<27};
+	
+/// The trace output masks for output B.
+///
+const uint32_t cTraceOutputBMasks[] = {0, 1<<25, 1<<28};
+
+/// The currently selected mask for trace output A.
+///
+const uint32_t cTraceOutputAMask = cTraceOutputAMasks[static_cast<uint8_t>(cTraceOutputPins)];
+
+/// The currently selected mask for trace output B.
+///
+const uint32_t cTraceOutputBMask = cTraceOutputBMasks[static_cast<uint8_t>(cTraceOutputPins)];
 
 
 /// Insert a short delay in the startup to have time to stop before things start.
@@ -116,12 +134,76 @@ void initializeCpuSpeed()
 }
 
 
+/// Initialize the trace outputs
+///
+void initializeTraceOutputs()
+{
+	if (cTraceOutputPins != TraceOutputPins::Disabled) {
+		// Configure the both trace outputs. Set the direction for these pins to output.
+		PORT->Group[0].DIRSET.reg = (cTraceOutputAMask|cTraceOutputBMask);
+		// Set both outputs to low.
+		PORT->Group[0].OUTCLR.reg = (cTraceOutputAMask|cTraceOutputBMask);
+	}
+}
+
+
 void initialize()
 {
 	initializeDelayStart();
 	initializeCpuClocks();
 	initializeCpuSpeed();
+	initializeTraceOutputs();
+}
+
+
+void setTraceOutputA()
+{
+	if (cTraceOutputPins != TraceOutputPins::Disabled) {
+		PORT->Group[0].OUTSET.reg = cTraceOutputAMask;
+	}
+}
+
+
+void clearTraceOutputA()
+{
+	if (cTraceOutputPins != TraceOutputPins::Disabled) {
+		PORT->Group[0].OUTCLR.reg = cTraceOutputAMask;
+	}	
+}
+
+
+void toggleTraceOutputA()
+{
+	if (cTraceOutputPins != TraceOutputPins::Disabled) {
+		PORT->Group[0].OUTTGL.reg = cTraceOutputAMask;
+	}
+}
+
+
+void setTraceOutputB()
+{
+	if (cTraceOutputPins != TraceOutputPins::Disabled) {
+		PORT->Group[0].OUTSET.reg = cTraceOutputBMask;
+	}
+}
+
+
+void clearTraceOutputB()
+{
+	if (cTraceOutputPins != TraceOutputPins::Disabled) {
+		PORT->Group[0].OUTCLR.reg = cTraceOutputBMask;
+	}
+}
+
+
+void toggleTraceOutputB()
+{
+	if (cTraceOutputPins != TraceOutputPins::Disabled) {
+		PORT->Group[0].OUTTGL.reg = cTraceOutputBMask;
+	}
 }
 
 
 }
+
+

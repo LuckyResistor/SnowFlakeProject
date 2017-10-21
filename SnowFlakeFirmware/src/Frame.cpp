@@ -28,11 +28,11 @@
 
 Frame::Frame()
 {
-	std::memset(&pixelValue, 0, sizeof(PixelMath::Value)*cSize);
+	std::memset(&pixelValue, 0, sizeof(PixelValue)*cSize);
 }
 
 
-Frame::Frame(PixelMath::Value pixelValue)
+Frame::Frame(PixelValue pixelValue)
 {
 	for (uint8_t i = 0; i < cSize; ++i) {
 		this->pixelValue[i] = pixelValue;
@@ -40,7 +40,7 @@ Frame::Frame(PixelMath::Value pixelValue)
 }
 
 
-Frame::Frame(std::function<PixelMath::Value(uint8_t)> pixelFn)
+Frame::Frame(std::function<PixelValue(uint8_t)> pixelFn)
 {
 	for (uint8_t i = 0; i < cSize; ++i) {
 		this->pixelValue[i] = pixelFn(i);
@@ -56,15 +56,15 @@ Frame::~Frame()
 void Frame::writeToDisplay()
 {
 	for (uint8_t i = 0; i < cSize; ++i) {
-		Display::setLedLevel(i, PixelMath::convertToInt(pixelValue[i], Display::cMaximumLevel));
+		Display::setLedLevel(i, pixelValue[i].convertToRange64());
 	}	
 }
 
 
-void Frame::blendTo(const Frame &frame, float factor)
+void Frame::blendTo(const Frame &frame, Fixed16 factor)
 {
-	const float factorA = 1.0f - factor;
-	const float factorB = factor;
+	const auto factorA = PixelValue(factor).inverted();
+	const auto factorB = PixelValue(factor);
 	for (uint8_t i = 0; i < cSize; ++i) {
 		pixelValue[i] = (pixelValue[i]*factorA + frame.pixelValue[i]*factorB);
 	}

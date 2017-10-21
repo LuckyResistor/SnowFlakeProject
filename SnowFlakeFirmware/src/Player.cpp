@@ -21,7 +21,9 @@
 #include "Player.hpp"
 
 
+#include "Configuration.hpp"
 #include "Display.hpp"
+#include "Hardware.hpp"
 #include "SceneManager.hpp"
 
 #include <cstring>
@@ -67,16 +69,18 @@ void initialize()
 }
 
 
-void animate()
+Frame getNextFrame()
 {
+	// Check the current animation mode.
 	if (gState == State::SingleScene) {
+		// Just display the scene from slot A
 		auto frame = gSlotA.scene.getFrame(&(gSlotA.data), gSlotA.frame);
 		if (++gSlotA.frame >= gSlotA.scene.getFrameCount()) {
 			gSlotA.frame = 0;
 		}
-		frame.writeToDisplay();
-		Display::synchronizeAndShow();
+		return frame;
 	} else {
+		// Blend scene from slot A into scene from slot B
 		auto frameA = gSlotA.scene.getFrame(&(gSlotA.data), gSlotA.frame);
 		auto frameB = gSlotB.scene.getFrame(&(gSlotB.data), gSlotB.frame);
 		if (++gSlotA.frame >= gSlotA.scene.getFrameCount()) {
@@ -90,11 +94,28 @@ void animate()
 		++gBlendCurrentFrame;
 		if (gBlendCurrentFrame >= gBlendLastFrame) {
 			std::memcpy(&gSlotA, &gSlotB, sizeof(Slot));
-			gState = State::SingleScene;			
+			gState = State::SingleScene;
 		}
-		frameA.writeToDisplay();
-		Display::synchronizeAndShow();
+		return frameA;
 	}
+}
+
+
+void animate()
+{
+	// Create a trace output if enabled.
+	if (cTraceOutputSource == TraceOutputSource::FrameClaculationTime) {
+		Hardware::setTraceOutputA();
+	}
+	// Get the next frame and write it into the display buffer.
+	auto frame = getNextFrame();
+	frame.writeToDisplay();
+	// Create a trace output if enabled.
+	if (cTraceOutputSource == TraceOutputSource::FrameClaculationTime) {
+		Hardware::clearTraceOutputA();
+	}
+	// Wait for sync and display the new frame.
+	Display::synchronizeAndShow();
 }
 
 
