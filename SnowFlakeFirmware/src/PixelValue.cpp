@@ -47,24 +47,6 @@ PixelValue& PixelValue::operator=(const PixelValue &other)
 }
 
 
-constexpr PixelValue PixelValue::maximum()
-{
-	return PixelValue(1.0f);
-}
-
-
-constexpr PixelValue PixelValue::minimum()
-{
-	return PixelValue(0.0f);
-}
-
-
-constexpr PixelValue PixelValue::middle()
-{
-	return PixelValue(0.5f);
-}
-
-
 PixelValue PixelValue::inverted() const
 {
 	return maximum()-(*this);
@@ -180,38 +162,6 @@ PixelValue& PixelValue::operator+=(const PixelValue &other)
 {
 	Fixed16::operator*=(other);
 	return *this;
-}
-
-
-PixelValue PixelValue::normalFromRange(uint32_t firstValue, uint32_t lastValue, uint32_t currentValue)
-{
-	if (firstValue == lastValue) {
-		return PixelValue::minimum();
-	} else if (firstValue < lastValue) {
-		const auto position = PixelValue(static_cast<int16_t>(currentValue-firstValue));
-		const auto length = PixelValue(static_cast<int16_t>(lastValue-firstValue));
-		return position/length;
-	} else {
-		const auto position = PixelValue(static_cast<int16_t>(currentValue-lastValue));
-		const auto length = PixelValue(static_cast<int16_t>(firstValue-lastValue));
-		return (position/length).inverted();
-	}
-}
-
-
-PixelValue PixelValue::normalFromRange(uint8_t firstValue, uint8_t lastValue, uint8_t currentValue)
-{
-	if (firstValue == lastValue) {
-		return PixelValue::minimum();
-	} else if (firstValue < lastValue) {
-		const auto position = PixelValue(static_cast<int16_t>(currentValue-firstValue));
-		const auto length = PixelValue(static_cast<int16_t>(lastValue-firstValue));
-		return position/length;
-	} else {
-		const auto position = PixelValue(static_cast<int16_t>(currentValue-lastValue));
-		const auto length = PixelValue(static_cast<int16_t>(firstValue-lastValue));
-		return (position/length).inverted();
-	}
 }
 
 

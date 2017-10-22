@@ -64,9 +64,9 @@ public:
 	PixelValue& operator=(const Fixed16 &other);
 
 public: // Constants
-	static constexpr PixelValue maximum();
-	static constexpr PixelValue minimum();
-	static constexpr PixelValue middle();
+	static constexpr PixelValue maximum() { return PixelValue(1.0f); }
+	static constexpr PixelValue minimum() { return PixelValue(0.0f); }
+	static constexpr PixelValue middle() { return PixelValue(0.5f); }
 
 public: // Pixel helper methods.
 	/// Get the inverted value.
@@ -98,21 +98,14 @@ public: // Pixel helper methods.
 public: // Creation
 	/// Get the a normal value for the given range.
 	///
-	/// The difference between firstValue and lastValue must not be larger than 0x7fff;
+	/// The difference between firstValue and lastValue must not be larger than 0x7fff.
 	///
 	/// @param firstValue The first value in the range for 0.0.
 	/// @param lastValue The last value in the range for 1.0.
 	/// @param currentValue The current value.
 	///
-	static PixelValue normalFromRange(uint32_t firstValue, uint32_t lastValue, uint32_t currentValue);
-
-	/// Get the a normal value for the given range.
-	///
-	/// @param firstValue The first value in the range for 0.0.
-	/// @param lastValue The last value in the range for 1.0.
-	/// @param currentValue The current value.
-	///
-	static PixelValue normalFromRange(uint8_t firstValue, uint8_t lastValue, uint8_t currentValue);
+	template<class T>
+	static PixelValue normalFromRange(T firstValue, T lastValue, T currentValue);
 
 public: // Conversion
 	/// Convert this pixel value to the display value.
@@ -138,3 +131,20 @@ public: // Overloaded operators
 	bool operator<(const PixelValue &other) const;
 	bool operator>(const PixelValue &other) const;
 };
+
+
+template<class T>
+PixelValue PixelValue::normalFromRange(T firstValue, T lastValue, T currentValue)
+{
+	if (firstValue == lastValue) {
+		return PixelValue::minimum();
+	} else if (firstValue < lastValue) {
+		const auto position = PixelValue(static_cast<int16_t>(currentValue-firstValue));
+		const auto length = PixelValue(static_cast<int16_t>(lastValue-firstValue));
+		return position/length;
+	} else {
+		const auto position = PixelValue(static_cast<int16_t>(currentValue-lastValue));
+		const auto length = PixelValue(static_cast<int16_t>(firstValue-lastValue));
+		return (position/length).inverted();
+	}
+}

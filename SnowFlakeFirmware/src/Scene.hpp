@@ -22,33 +22,7 @@
 
 
 #include "Frame.hpp"
-
-
-/// Private data area for a scene.
-///
-class SceneData
-{
-public:
-	/// The size of the data array.
-	///
-	static const uint8_t cSize = 32;
-	
-public:
-	/// Create a zero scene data structure.
-	///
-	SceneData();
-	
-public:
-	/// Clear existing scene data.
-	///
-	void clear();
-	
-public:	
-	union {
-		float floatData[cSize]; ///< Place to store float data.
-		uint32_t int32Data[cSize]; ///< Or alternatively store integer data.
-	};
-};
+#include "SceneData.hpp"
 
 
 /// The base class for a single scene for the snow flake.
@@ -65,7 +39,8 @@ public:
 		IceSparkle,
 		SimpleShift,
 		SimpleRotation,
-		TestFlash
+		SimpleFlash,
+		SimpleRandomParticle
 	};
 	
 public:

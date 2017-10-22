@@ -18,33 +18,19 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#pragma once
+#include "Scene.hpp"
 
 
-#include "../Scene.hpp"
+#include <cstring>
 
 
-/// \namespace scene::TestFlash
-/// A simple scene which flashes all LEDs to iterate over all brightness levels.
-
-
-namespace scene {
-namespace TestFlash {
-
-
-/// The number of frames for this scene
-///
-const uint32_t cFrameCount = 50;
-
-/// The function to initialize this scene.
-///
-void initialize(SceneData *data);
-
-/// The function to get a frame from this scene.
-///
-Frame getFrame(SceneData *data, FrameIndex frameIndex);
-
-
-}
+SceneData::SceneData()
+{
+	std::memset(&int32, 0, sizeof(uint32_t)*cSize);
 }
 
+
+void SceneData::clear()
+{
+	std::memset(&int32, 0, sizeof(uint32_t)*cSize);
+}

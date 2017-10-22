@@ -40,7 +40,12 @@ enum class TraceOutputSource : uint8_t {
 	/// Output A is set to high while a new frame is calculated.
 	/// Output B is set to high at the frame synchronization.
 	///
-	FrameClaculationTime, 
+	FrameClaculationTime,
+	
+	/// Output A is set high while the display interrupt is running.
+	/// Output B is set high for the interrupt of PWM counter 0.
+	///
+	DisplayInterruptTime,
 };
 
 

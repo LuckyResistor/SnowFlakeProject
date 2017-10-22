@@ -24,7 +24,7 @@
 #include "../Scene.hpp"
 
 
-/// \namespace scene::SimpleShift
+/// \namespace scene::SimpleRotation
 /// A simple rotating scene.
 
 

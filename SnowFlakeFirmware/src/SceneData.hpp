@@ -18,60 +18,42 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "Scene.hpp"
+#pragma once
 
 
-#include <cstring>
+#include "Fixed16.hpp"
+
+#include <cstdint>
 
 
-namespace {
-void emptyInitScene(SceneData*)
+/// Private data area for a scene.
+///
+class SceneData
 {
-	// empty
-}	
-Frame emptyGetFrame(SceneData*, FrameIndex)
-{
-	return Frame();
-}
-}
+public:
+	/// The size of the data array.
+	///
+	static const uint8_t cSize = 48;
+	
+public:
+	/// Create a zero scene data structure.
+	///
+	SceneData();
+	
+public:
+	/// Clear existing scene data.
+	///
+	void clear();
+	
+public:	
+	union {
+		Fixed16 fixed16[cSize]; ///< An array of fixed point data.
+		uint32_t int32[cSize]; ///< Or alternatively store 32bit integer data.
+		uint16_t int16[cSize*2]; ///< Or alternatively store 16bit integer data.
+		uint8_t int8[cSize*4]; ///< Or alternatively store 8bit integer data.
+	};
+};
 
 
-Scene::Scene()
-	: _frameCount(10), _initFn(&emptyInitScene), _getFrameFn(&emptyGetFrame)
-{
-}
-
-
-Scene::Scene(uint32_t frameCount, InitFn initFn, GetFrameFn getFrameFn)
-	: _frameCount(frameCount), _initFn(initFn), _getFrameFn(getFrameFn)
-{
-}
-
-
-Scene::Scene(const Scene &copy)
-	: _frameCount(copy._frameCount), _initFn(copy._initFn), _getFrameFn(copy._getFrameFn)
-{
-}
-
-
-const Scene& Scene::operator=(const Scene &assign)
-{
-	_frameCount = assign._frameCount;
-	_initFn = assign._initFn;
-	_getFrameFn = assign._getFrameFn;
-	return assign;
-}
-
-
-void Scene::init(SceneData *data)
-{
-	(*_initFn)(data);
-}
-
-
-Frame Scene::getFrame(SceneData *data, FrameIndex frameIndex)
-{
-	return (*_getFrameFn)(data, frameIndex);
-}
 
 

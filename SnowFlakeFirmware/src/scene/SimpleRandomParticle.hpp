@@ -18,60 +18,33 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "Scene.hpp"
+#pragma once
 
 
-#include <cstring>
+#include "../Scene.hpp"
 
 
-namespace {
-void emptyInitScene(SceneData*)
-{
-	// empty
-}	
-Frame emptyGetFrame(SceneData*, FrameIndex)
-{
-	return Frame();
+/// \namespace scene::SimpleRandomParticle
+/// A simple scene which flashes all LEDs to iterate over all brightness levels.
+
+
+namespace scene {
+namespace SimpleRandomParticle {
+
+
+/// The number of frames for this scene
+///
+const uint32_t cFrameCount = 300;
+
+/// The function to initialize this scene.
+///
+void initialize(SceneData *data);
+
+/// The function to get a frame from this scene.
+///
+Frame getFrame(SceneData *data, FrameIndex frameIndex);
+
+
 }
 }
-
-
-Scene::Scene()
-	: _frameCount(10), _initFn(&emptyInitScene), _getFrameFn(&emptyGetFrame)
-{
-}
-
-
-Scene::Scene(uint32_t frameCount, InitFn initFn, GetFrameFn getFrameFn)
-	: _frameCount(frameCount), _initFn(initFn), _getFrameFn(getFrameFn)
-{
-}
-
-
-Scene::Scene(const Scene &copy)
-	: _frameCount(copy._frameCount), _initFn(copy._initFn), _getFrameFn(copy._getFrameFn)
-{
-}
-
-
-const Scene& Scene::operator=(const Scene &assign)
-{
-	_frameCount = assign._frameCount;
-	_initFn = assign._initFn;
-	_getFrameFn = assign._getFrameFn;
-	return assign;
-}
-
-
-void Scene::init(SceneData *data)
-{
-	(*_initFn)(data);
-}
-
-
-Frame Scene::getFrame(SceneData *data, FrameIndex frameIndex)
-{
-	return (*_getFrameFn)(data, frameIndex);
-}
-
 

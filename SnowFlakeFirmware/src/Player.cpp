@@ -65,6 +65,7 @@ void initialize()
 {
 	gSlotA.frame = 0;
 	gSlotA.scene = SceneManager::getScene(Scene::Black);
+	gSlotA.scene.init(&gSlotA.data);
 	gSlotB.frame = 0;
 }
 
@@ -74,15 +75,15 @@ Frame getNextFrame()
 	// Check the current animation mode.
 	if (gState == State::SingleScene) {
 		// Just display the scene from slot A
-		auto frame = gSlotA.scene.getFrame(&(gSlotA.data), gSlotA.frame);
+		auto frame = gSlotA.scene.getFrame(&gSlotA.data, gSlotA.frame);
 		if (++gSlotA.frame >= gSlotA.scene.getFrameCount()) {
 			gSlotA.frame = 0;
 		}
 		return frame;
 	} else {
 		// Blend scene from slot A into scene from slot B
-		auto frameA = gSlotA.scene.getFrame(&(gSlotA.data), gSlotA.frame);
-		auto frameB = gSlotB.scene.getFrame(&(gSlotB.data), gSlotB.frame);
+		auto frameA = gSlotA.scene.getFrame(&gSlotA.data, gSlotA.frame);
+		auto frameB = gSlotB.scene.getFrame(&gSlotB.data, gSlotB.frame);
 		if (++gSlotA.frame >= gSlotA.scene.getFrameCount()) {
 			gSlotA.frame = 0;
 		}
@@ -124,6 +125,7 @@ void displayScene(Scene::Name sceneName)
 	gSlotA.frame = 0;
 	gSlotA.data.clear();
 	gSlotA.scene = SceneManager::getScene(sceneName);
+	gSlotA.scene.init(&gSlotA.data);
 	gState = State::SingleScene;
 }
 
@@ -133,6 +135,7 @@ void blendToScene(Scene::Name sceneName, uint32_t durationFrames)
 	gSlotB.frame = 0;
 	gSlotB.data.clear();
 	gSlotB.scene = SceneManager::getScene(sceneName);
+	gSlotB.scene.init(&gSlotB.data);
 	gBlendCurrentFrame = 0;
 	gBlendLastFrame = durationFrames;
 	gState = State::Blend;

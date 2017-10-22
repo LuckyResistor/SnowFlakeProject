@@ -18,60 +18,45 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "Scene.hpp"
+#include "SimpleRandomParticle.hpp"
 
 
-#include <cstring>
+#include "../InterpolatingArray.hpp"
+#include "../RandomFrameCounters.hpp"
 
 
-namespace {
-void emptyInitScene(SceneData*)
+namespace scene {
+namespace SimpleRandomParticle {
+
+
+/// Create a random frame counter to show the particles.
+///
+const RandomFrameCounters<150, 200> gRandomFrameCounters;
+
+/// The animation for a single particle..
+///
+const Fixed16 cAnimation[] = {
+	Fixed16(0.0f), Fixed16(0.1f), Fixed16(0.5f), Fixed16(0.8f), Fixed16(0.9f), Fixed16(1.0f), Fixed16(0.2f), Fixed16(0.1f),
+};
+
+/// The interpolating array.
+///
+const InterpolatingArray<sizeof(cAnimation)/sizeof(Fixed16)> cAnimationInterpolation(cAnimation);
+
+
+void initialize(SceneData *data)
 {
-	// empty
-}	
-Frame emptyGetFrame(SceneData*, FrameIndex)
-{
-	return Frame();
-}
-}
-
-
-Scene::Scene()
-	: _frameCount(10), _initFn(&emptyInitScene), _getFrameFn(&emptyGetFrame)
-{
-}
-
-
-Scene::Scene(uint32_t frameCount, InitFn initFn, GetFrameFn getFrameFn)
-	: _frameCount(frameCount), _initFn(initFn), _getFrameFn(getFrameFn)
-{
-}
-
-
-Scene::Scene(const Scene &copy)
-	: _frameCount(copy._frameCount), _initFn(copy._initFn), _getFrameFn(copy._getFrameFn)
-{
+	gRandomFrameCounters.initialize(data);
 }
 
 
-const Scene& Scene::operator=(const Scene &assign)
+Frame getFrame(SceneData *data, FrameIndex)
 {
-	_frameCount = assign._frameCount;
-	_initFn = assign._initFn;
-	_getFrameFn = assign._getFrameFn;
-	return assign;
+	return gRandomFrameCounters.getFrame(data, [](Fixed16 x)->PixelValue{
+		return cAnimationInterpolation.getValueAt(x);
+	});
 }
 
 
-void Scene::init(SceneData *data)
-{
-	(*_initFn)(data);
 }
-
-
-Frame Scene::getFrame(SceneData *data, FrameIndex frameIndex)
-{
-	return (*_getFrameFn)(data, frameIndex);
 }
-
-

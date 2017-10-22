@@ -22,9 +22,10 @@
 
 
 #include "scene/Black.hpp"
-#include "scene/TestFlash.hpp"
+#include "scene/SimpleFlash.hpp"
 #include "scene/SimpleShift.hpp"
 #include "scene/SimpleRotation.hpp"
+#include "scene/SimpleRandomParticle.hpp"
 #include "scene/IceSparkle.hpp"
 
 
@@ -52,8 +53,9 @@ const SceneEntry cScenes[] __aligned(4) = {
 	LR_SCENE_ENTRY(Black),
 	LR_SCENE_ENTRY(SimpleShift),
 	LR_SCENE_ENTRY(SimpleRotation),
+	LR_SCENE_ENTRY(SimpleFlash),
+	LR_SCENE_ENTRY(SimpleRandomParticle),
 	LR_SCENE_ENTRY(IceSparkle),
-	LR_SCENE_ENTRY(TestFlash),
 	{Scene::Black, 0, nullptr, nullptr} // The end mark.
 };
 

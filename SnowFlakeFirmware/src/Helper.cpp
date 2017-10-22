@@ -23,8 +23,15 @@
 
 #include "Chip.hpp"
 
+#include <random>
+
 
 namespace Helper {
+
+
+/// A fast lagged Fibonacci pseudo random number generator.
+///
+std::ranlux24_base gRandomGeneratorEngine; 
 
 
 /// The tick counter for the delay function.
@@ -69,6 +76,20 @@ uint32_t getSystemTimeMs()
 void waitForSystemTime(uint32_t systemTime)
 {
 	while (gTickCounter != systemTime) {}
+}
+
+
+uint32_t getRandom32(uint32_t minimum, uint32_t maximum)
+{
+	std::uniform_int_distribution<> distribution(minimum, maximum);
+	return distribution(gRandomGeneratorEngine);
+}
+
+
+uint16_t getRandom16(uint16_t minimum, uint16_t maximum)
+{
+	std::uniform_int_distribution<> distribution(minimum, maximum);
+	return distribution(gRandomGeneratorEngine);
 }
 
 

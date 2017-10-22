@@ -157,6 +157,7 @@
       <Value>%24(PackRepoDir)\arm\CMSIS\4.2.0\CMSIS\Include\</Value>
     </ListValues>
   </armgcccpp.compiler.directories.IncludePaths>
+  <armgcccpp.compiler.optimization.level>Optimize (-O1)</armgcccpp.compiler.optimization.level>
   <armgcccpp.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcccpp.compiler.optimization.PrepareFunctionsForGarbageCollection>
   <armgcccpp.compiler.optimization.EnableUnsafeMatchOptimizations>True</armgcccpp.compiler.optimization.EnableUnsafeMatchOptimizations>
   <armgcccpp.compiler.optimization.EnableFastMath>True</armgcccpp.compiler.optimization.EnableFastMath>
@@ -268,10 +269,19 @@
     <Compile Include="src\Player.hpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\RandomFrameCounters.hpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\Scene.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Scene.hpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\SceneData.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\SceneData.hpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\SceneManager.cpp">
@@ -292,6 +302,12 @@
     <Compile Include="src\scene\IceSparkle.hpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\scene\SimpleRandomParticle.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\scene\SimpleRandomParticle.hpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\scene\SimpleRotation.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -304,10 +320,10 @@
     <Compile Include="src\scene\SimpleShift.hpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\scene\TestFlash.cpp">
+    <Compile Include="src\scene\SimpleFlash.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\scene\TestFlash.hpp">
+    <Compile Include="src\scene\SimpleFlash.hpp">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

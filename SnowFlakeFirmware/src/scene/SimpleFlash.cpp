@@ -18,60 +18,24 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "Scene.hpp"
+#include "SimpleFlash.hpp"
 
 
-#include <cstring>
+namespace scene {
+namespace SimpleFlash {
 
 
-namespace {
-void emptyInitScene(SceneData*)
+void initialize(SceneData*)
 {
 	// empty
-}	
-Frame emptyGetFrame(SceneData*, FrameIndex)
+}
+
+
+Frame getFrame(SceneData*, FrameIndex frameIndex)
 {
-	return Frame();
-}
-}
-
-
-Scene::Scene()
-	: _frameCount(10), _initFn(&emptyInitScene), _getFrameFn(&emptyGetFrame)
-{
+	return Frame(PixelValue::normalFromRange<uint32_t>(0, cFrameCount, frameIndex).bounced());
 }
 
 
-Scene::Scene(uint32_t frameCount, InitFn initFn, GetFrameFn getFrameFn)
-	: _frameCount(frameCount), _initFn(initFn), _getFrameFn(getFrameFn)
-{
 }
-
-
-Scene::Scene(const Scene &copy)
-	: _frameCount(copy._frameCount), _initFn(copy._initFn), _getFrameFn(copy._getFrameFn)
-{
 }
-
-
-const Scene& Scene::operator=(const Scene &assign)
-{
-	_frameCount = assign._frameCount;
-	_initFn = assign._initFn;
-	_getFrameFn = assign._getFrameFn;
-	return assign;
-}
-
-
-void Scene::init(SceneData *data)
-{
-	(*_initFn)(data);
-}
-
-
-Frame Scene::getFrame(SceneData *data, FrameIndex frameIndex)
-{
-	return (*_getFrameFn)(data, frameIndex);
-}
-
-

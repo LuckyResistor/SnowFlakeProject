@@ -38,9 +38,10 @@ namespace Application {
 /// The scenes to display.
 ///
 const Scene::Name cScenesOnDisplay[] = {
+	Scene::SimpleRandomParticle,
 	Scene::SimpleRotation,
 	Scene::SimpleShift,
-	Scene::TestFlash
+	Scene::SimpleFlash,
 };
 
 /// The number of scenes to display.
@@ -94,7 +95,7 @@ void loop()
 		Player::animate();
 		// Check if it's time to blend to the next scene.
 		const uint32_t systemTime = Helper::getSystemTimeMs();
-		if ((systemTime - gLastSceneBlend) >= cSceneDuration) {
+		if ((systemTime - gLastSceneBlend) >= cSceneDuration && cScenesOnDisplayCount > 1) {
 			++gCurrentSceneIndex;
 			if (gCurrentSceneIndex >= cScenesOnDisplayCount) {
 				gCurrentSceneIndex = 0;

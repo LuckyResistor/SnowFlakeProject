@@ -77,7 +77,7 @@ void initialize(SceneData*)
 Frame getFrame(SceneData*, FrameIndex frameIndex)
 {
 	return Frame([=](uint8_t pixelIndex)->PixelValue{
-		const auto position = PixelValue(PixelValue::normalFromRange(0u, cFrameCount, frameIndex) - cLedMapClockwise[pixelIndex]);
+		const auto position = PixelValue(PixelValue::normalFromRange<uint32_t>(0, cFrameCount, frameIndex) - cLedMapClockwise[pixelIndex]);
 		return cBarsInterpolation.getValueAt(position.wrapped());
 	});
 }
