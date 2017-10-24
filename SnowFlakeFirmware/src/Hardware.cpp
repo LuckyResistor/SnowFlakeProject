@@ -109,7 +109,7 @@ void initializeCpuClocks()
 	SYSCTRL->DFLLCTRL.bit.ENABLE = true;
 	while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {}; // Wait for synchronization.
 	// A9. Wait for the fine and coarse locks.
-	while (!SYSCTRL->INTFLAG.bit.DFLLLCKC && !SYSCTRL->INTFLAG.bit.DFLLLCKF) {};
+	while (!(SYSCTRL->INTFLAG.bit.DFLLLCKC && SYSCTRL->INTFLAG.bit.DFLLLCKF)) {};
 	// A10. Wait until the DFLL is ready.
 	while (!SYSCTRL->INTFLAG.bit.DFLLRDY) {};
 }
