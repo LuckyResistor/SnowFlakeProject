@@ -154,13 +154,13 @@ __aligned(4) volatile uint8_t gFrameCounter = 0;
 void initialize()
 {
 	// Clear the buffers.
-	std::memset(&gDisplayBufferA, cMaximumLevel, sizeof(uint8_t)*cLedCount);
-	std::memset(&gDisplayBufferB, cMaximumLevel, sizeof(uint8_t)*cLedCount);
+	std::memset(&gDisplayBufferA, 0, sizeof(uint8_t)*cLedCount);
+	std::memset(&gDisplayBufferB, 0, sizeof(uint8_t)*cLedCount);
 
 	// Configure all LED pins as outputs.
 	PORT->Group[0].DIR.reg |= cPortMaskLed;
 	// Set all LED pins to high to turn the LEDs off.
-	PORT->Group[0].OUT.reg |= cPortMaskLed;
+	PORT->Group[0].OUTSET.reg = cPortMaskLed;
 
 	// Enable power for counter TC0
 	PM->APBCMASK.bit.TC0_ = true;
