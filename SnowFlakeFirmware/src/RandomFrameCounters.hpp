@@ -49,13 +49,14 @@ public:
 	{
 		// Initialize all the frame counter values.
 		for (uint8_t index = 0; index < Display::cLedCount; ++index) {
-			const uint8_t dataIndex = (index*2);
-			uint16_t *frameCount = &(data->int16[dataIndex]);
-			uint16_t *currentFrame = &(data->int16[dataIndex+1]);
 			// Get a random value for the maximum frame count.
-			*frameCount = Helper::getRandom16(minimumFrames, maximumFrames);
+			const uint16_t frameCount = Helper::getRandom16(minimumFrames, maximumFrames);
 			// Get a random value for the current frame.
-			*currentFrame = Helper::getRandom16(minimumFrames, maximumFrames-1);
+			const uint16_t startFrame = Helper::getRandom16(0, frameCount-1);
+			// Assign the new random values.
+			const uint8_t dataIndex = (index*2);
+			data->int16[dataIndex] = frameCount;
+			data->int16[dataIndex+1] = startFrame;
 		}
 	}
 	
@@ -70,13 +71,18 @@ public:
 	{
 		Frame frame;
 		for (uint8_t index = 0; index < Frame::cSize; ++index) {
+			// Get the current pixel value.
 			const uint8_t dataIndex = (index*2);
-			uint16_t *frameCount = &(data->int16[dataIndex]);
-			uint16_t *currentFrame = &(data->int16[dataIndex+1]);
-			frame.pixelValue[index] = pixelFn(PixelValue::normalFromRange<uint16_t>(0, *frameCount, *currentFrame));
-			++(*currentFrame);
-			if (*currentFrame >= *frameCount) {
-				*currentFrame = 0;
+			const uint16_t frameCount = data->int16[dataIndex];
+			const uint16_t currentFrame = data->int16[dataIndex+1];
+			const Fixed16 position = PixelValue::normalFromRange<uint16_t>(0, frameCount, currentFrame);
+			frame.pixelValue[index] = pixelFn(position);
+			// Increase the frame counter.
+			if (++(data->int16[dataIndex+1]) >= frameCount) {
+				data->int16[dataIndex+1] = 0;
+				// Get a new random value for the maximum frame count.
+				const uint16_t frameCount = Helper::getRandom16(minimumFrames, maximumFrames);
+				data->int16[dataIndex] = frameCount;
 			}
 		}
 		return frame;
