@@ -49,15 +49,19 @@ void initialize();
 ///
 void setLedLevel(uint8_t ledIndex, uint8_t level);
 
-/// Show the current display buffer.
-///
-void show();
-
 /// Wait for the next frame and show.
 ///
 /// At 250Hz, this is for a frame rate of ~31 fps, or every 32ms.
 ///
 void synchronizeAndShow();
+
+/// Activate a test pattern.
+///
+/// The test pattern simply toggles the LED state on each write to get
+/// a better impression of the distribution of the value changes.
+/// The initial LED state is high.
+///
+void activateTestPattern();
 
 	
 }

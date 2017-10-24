@@ -32,12 +32,6 @@
 
 namespace Display {
 
-/// The display buffer address
-///
-enum BufferId : uint8_t {
-	BufferA = 0,
-	BufferB = 1,	
-};
 
 /// The number of LEDs
 ///
@@ -107,20 +101,20 @@ const uint8_t cInitialLedMaskCount = 12;
 /// The logarithmic timing values
 ///
 __aligned(4) const uint16_t cTimingValues[cMaximumLevel] {
-	580, 0, 0, 0, 0, 0, 0, 0,
+	250, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 120, 132, 138, 141,
 	145, 149, 154, 158, 163, 168, 174, 180,
 	186, 193, 200, 207, 215, 223, 232, 242,
 	252, 263, 274, 286, 299, 313, 327, 343,
 	359, 376, 395, 414, 435, 457, 481, 506,
 	532, 561, 591, 622, 656, 692, 730, 771,
-	814, 859, 908, 959, 1014, 1072, 1134, 1200-250, // Compensate last value.
+	814, 859, 908, 959, 1014, 1072, 1134, 1200, // Compensate last value.
 };
 
 /// The timing for the initial values.
 ///
 __aligned(4) const uint32_t cInitialTimingValues[cInitialLedMaskCount] {
-	0, 0, 1, 2, 4, 8, 16, 18, 20, 22, 24, 26,
+	0, 0, 0, 0, 2, 8, 16, 18, 20, 32, 44, 50,
 };
 
 
@@ -128,34 +122,59 @@ __aligned(4) const uint32_t cInitialTimingValues[cInitialLedMaskCount] {
 ///
 __aligned(4) uint8_t gPwmCounter = 0;
 
-/// The array with initial calculated masks.
+/// The structure for a single display buffer.
 ///
-__aligned(4) uint32_t gInitialLedMasks[cInitialLedMaskCount];
+struct Buffer
+{
+	/// The calculated LED masks to write into the port register.
+	///
+	uint32_t mask[cMaximumLevel];
 	
-/// Display buffer A
-///
-__aligned(4) uint8_t gDisplayBufferA[cLedCount];
+	/// The LED level from 0 to cMaximumLevel, where cMaximumLevel is the brightest value.
+	///
+	uint8_t level[cLedCount];
+};
 
-/// Display buffer B
+/// The two buffers for the display.
 ///
-__aligned(4) uint8_t gDisplayBufferB[cLedCount];
+__aligned(4) Buffer gBuffer[2];
+	
+/// The masks for the initial states of the LEDs.
+///
+__aligned(4) uint32_t gInitialMasks[cInitialLedMaskCount];
 	
 /// The currently displayed buffer
 ///
-__aligned(4) volatile BufferId gDisplayedBuffer = BufferA;
+__aligned(4) volatile uint8_t gDisplayedBufferIndex = 0;
 	
 /// The frame counter for the display.
 ///
 __aligned(4) volatile uint8_t gFrameCounter = 0;
 
 
+/// Calculate the LED masks for the given buffer.
+///
+__attribute__((optimize(3))) // always optimize this function.
+void calculateLedMasksForBuffer(Buffer *buffer)
+{
+	for (uint8_t maskIndex = 0; maskIndex < cMaximumLevel; ++maskIndex) {
+		uint32_t mask = 0;
+		for (uint8_t ledIndex = 0; ledIndex < cLedCount; ++ledIndex) {
+			if (buffer->level[ledIndex] > maskIndex) {
+				mask |= cLedMasks[ledIndex];
+			}
+		}
+		buffer->mask[maskIndex] = ((~mask) & cPortMaskLed);
+	}
+}
 
 	
 void initialize()
 {
 	// Clear the buffers.
-	std::memset(&gDisplayBufferA, 0, sizeof(uint8_t)*cLedCount);
-	std::memset(&gDisplayBufferB, 0, sizeof(uint8_t)*cLedCount);
+	std::memset(&gBuffer, 0, sizeof(Buffer)*2);
+	// Prepare the masks for the first (currently displayed) buffer.
+	calculateLedMasksForBuffer(gBuffer);
 
 	// Configure all LED pins as outputs.
 	PORT->Group[0].DIR.reg |= cPortMaskLed;
@@ -198,35 +217,24 @@ void setLedLevel(uint8_t ledIndex, uint8_t level)
 	if (level > cMaximumLevel) {
 		level = cMaximumLevel;
 	}
-	if (gDisplayedBuffer == BufferA) {
-		gDisplayBufferB[ledIndex] = level;
-	} else {
-		gDisplayBufferA[ledIndex] = level;
-	}
-}
-
-
-void show()
-{
-	if (gDisplayedBuffer == BufferA) {
-		gDisplayedBuffer = BufferB;
-		std::memcpy(gDisplayBufferA, gDisplayBufferB, sizeof(uint8_t)*cLedCount);
-	} else {
-		gDisplayedBuffer = BufferA;
-		std::memcpy(gDisplayBufferB, gDisplayBufferA, sizeof(uint8_t)*cLedCount);
-	}
+	gBuffer[gDisplayedBufferIndex^1].level[ledIndex] = level;
 }
 
 
 void synchronizeAndShow()
 {
+	// Prepare the masks for the new buffer.
+	const uint8_t targetBuffer = (gDisplayedBufferIndex^1);
+	calculateLedMasksForBuffer(gBuffer + targetBuffer);
 	// If we already are at the frame boundary, skip a frame.
 	if ((gFrameCounter&0b111) == 0) {
 		while ((gFrameCounter&0b111) == 0) {}; // wait
 	}
 	// Wait for the frame boundary.
 	while ((gFrameCounter&0b111)!=0) {}; // wait
-	show();
+	gDisplayedBufferIndex = targetBuffer; // flip the buffer.
+	// Copy the current levels back to the new back buffer.
+	std::memcpy(gBuffer[gDisplayedBufferIndex^1].level, gBuffer[gDisplayedBufferIndex].level, sizeof(uint8_t)*cLedCount);
 	// Toggle trace output B if this is the first frame.
 	if (cTraceOutputSource == TraceOutputSource::FrameClaculationTime) {
 		Hardware::toggleTraceOutputB();
@@ -234,32 +242,13 @@ void synchronizeAndShow()
 }
 
 
-/// Get the current counter value.
-///
-__attribute__((optimize(3))) // always optimize this function.
-inline uint16_t getCounterValue()
+void activateTestPattern()
 {
-	TC0->COUNT16.READREQ.reg = TC_READREQ_ADDR(TC_COUNT16_COUNT_OFFSET)|TC_READREQ_RREQ;
-	while (TC0->COUNT16.STATUS.bit.SYNCBUSY) {};
-	return TC0->COUNT16.COUNT.reg;	
-}
-
-
-/// Calculate a single LED mask for the given buffer and PWM value.
-///
-__attribute__((optimize(3))) // always optimize this function.
-inline uint32_t calculateMaskFromBuffer(uint8_t pwmValue, uint8_t *buffer)
-{
-	uint32_t result = 0;
-	for (uint8_t i = 0; i < cLedCount; ++i) {
-		if (buffer[i]>pwmValue) {
-			result |= cLedMasks[i];
-		} else {
-			__NOP(); // Make sure we have a consistent timing for this function.
-			__NOP();
-		}
+	auto buffer = gBuffer;
+	for (uint8_t maskIndex = 0; maskIndex < cMaximumLevel; ++maskIndex) {
+		buffer->mask[maskIndex] = (((maskIndex & 1) == 0) ? cPortMaskLed : 0);
 	}
-	return result;
+	gDisplayedBufferIndex = 0;
 }
 
 
@@ -277,6 +266,8 @@ void onInterrupt()
 	}
 	// Prepare a copy of the PWM counter value.
 	const auto currentPwmValue = gPwmCounter;
+	// The display buffer to show.
+	const Buffer &buffer = gBuffer[gDisplayedBufferIndex];
 	// The current state of the IO lines without the LEDs.
 	const uint32_t portState = (PORT->Group[0].OUT.reg & (~cPortMaskLed));
 	// Configure the next CC0 value
@@ -284,33 +275,22 @@ void onInterrupt()
 	while (TC0->COUNT16.STATUS.bit.SYNCBUSY) {};	
 	// Check for the special case of the first PWM values.
 	if (currentPwmValue == 0) {
-		// Calculate the first LED masks to get the best blend to black.
-		// This calculation time to added to the last PWM level which is the less critical one.
-		for (uint8_t i = 0; i < cInitialLedMaskCount; ++i) {
-			if (gDisplayedBuffer == BufferA) {
-				gInitialLedMasks[i] = portState | (~calculateMaskFromBuffer(i, gDisplayBufferA) & cPortMaskLed);
-			} else {
-				gInitialLedMasks[i] = portState | (~calculateMaskFromBuffer(i, gDisplayBufferB) & cPortMaskLed);
-			}
-		}
 		// Display all initial masks.
-		for (uint8_t i = 0; i < cInitialLedMaskCount; ++i) {
+		PORT->Group[0].OUT.reg = portState | buffer.mask[0];
+		PORT->Group[0].OUT.reg = portState | buffer.mask[1];
+		__NOP();
+		__NOP();
+		__NOP();
+		PORT->Group[0].OUT.reg = portState | buffer.mask[2];
+		for (uint8_t i = 3; i < cInitialLedMaskCount; ++i) {
 			Helper::delayNop(cInitialTimingValues[i]);
-			PORT->Group[0].OUT.reg = gInitialLedMasks[i];
+			PORT->Group[0].OUT.reg = portState | buffer.mask[i];
 		}
 		// Update the PWM counter to the first regular step.
 		gPwmCounter = cInitialLedMaskCount;
 	} else {
-		// The resulting LED mask.
-		uint32_t ledMask;
-		// Check which buffer to display.
-		if (gDisplayedBuffer == BufferA) {
-			ledMask = calculateMaskFromBuffer(currentPwmValue, gDisplayBufferA);
-		} else {
-			ledMask = calculateMaskFromBuffer(currentPwmValue, gDisplayBufferB);
-		}
 		// Send the new mask to the port
-		PORT->Group[0].OUT.reg = portState | (~ledMask & cPortMaskLed);
+		PORT->Group[0].OUT.reg = portState | buffer.mask[currentPwmValue];
 		// Increase the PWM counter for the next call.
 		++gPwmCounter;
 		if (gPwmCounter>=cMaximumLevel) {
@@ -333,6 +313,7 @@ void onInterrupt()
 
 /// Implement the interrupt handler for the counter TC0
 ///
+__attribute__((optimize(3))) // always optimize this function.
 void TC0_Handler()
 {
 	// Call our interrupt handler.

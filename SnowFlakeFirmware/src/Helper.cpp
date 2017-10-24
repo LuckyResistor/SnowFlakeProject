@@ -49,7 +49,7 @@ void initialize()
 	NVIC_EnableIRQ(SysTick_IRQn);
 }
 
-
+__attribute__((optimize(0))) // never optimize this function.
 void delayNop(uint32_t cycles)
 {
 	for (uint32_t i = 0; i < cycles; ++i) {
