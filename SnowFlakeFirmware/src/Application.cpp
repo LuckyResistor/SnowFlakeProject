@@ -100,7 +100,7 @@ void loop()
 		if ((systemTime - gLastSceneBlend) >= cSceneDuration && cScenesOnDisplayCount > 1) {
 			auto nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
 			while (nextScene == gCurrentSceneIndex) {
-				Helper::getRandom8(0, cScenesOnDisplayCount-1);
+				nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
 			}
 			gCurrentSceneIndex = nextScene;
 			Player::blendToScene(cScenesOnDisplay[gCurrentSceneIndex], cBlendDuration);
