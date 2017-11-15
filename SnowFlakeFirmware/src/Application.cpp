@@ -40,6 +40,7 @@ namespace Application {
 const Scene::Name cScenesOnDisplay[] = {
 	Scene::SimpleRandomParticle,
 	Scene::SimpleRotation,
+	Scene::SimpleDiagonal,
 	Scene::SimpleShift,
 	Scene::SimpleFlash,
 };
@@ -78,6 +79,7 @@ void initialize()
 
 	// Blend to the first scene from black.
 	Player::displayScene(Scene::Black);
+	gCurrentSceneIndex = Helper::getRandom8(0, cScenesOnDisplayCount-1);
 	Player::blendToScene(cScenesOnDisplay[gCurrentSceneIndex], cBlendDuration);
 	while (Player::getState() == Player::State::Blend) {
 		Player::animate();
@@ -96,10 +98,11 @@ void loop()
 		// Check if it's time to blend to the next scene.
 		const uint32_t systemTime = Helper::getSystemTimeMs();
 		if ((systemTime - gLastSceneBlend) >= cSceneDuration && cScenesOnDisplayCount > 1) {
-			++gCurrentSceneIndex;
-			if (gCurrentSceneIndex >= cScenesOnDisplayCount) {
-				gCurrentSceneIndex = 0;
+			auto nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
+			while (nextScene == gCurrentSceneIndex) {
+				nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
 			}
+			gCurrentSceneIndex = nextScene;
 			Player::blendToScene(cScenesOnDisplay[gCurrentSceneIndex], cBlendDuration);
 			gLastSceneBlend = systemTime;	
 		}

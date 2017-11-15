@@ -38,9 +38,11 @@ public:
 	}
 
 public:
-	/// Get the value at the given position.
+	/// Get the smooth value at the given position.
 	///
-	Fixed16 getValueAt(Fixed16 position) const 
+	/// This will blend neighbour values into each other for a smooth transition.
+	///
+	Fixed16 getSmoothValueAt(Fixed16 position) const 
 	{
 		const auto preciseElementIndex = (position * Fixed16(static_cast<int16_t>(elementCount)));
 		const uint8_t firstElementIndex = static_cast<uint8_t>(preciseElementIndex.toRawInteger());
@@ -51,6 +53,17 @@ public:
 			const uint8_t secondElementIndex = ((firstElementIndex == (elementCount-1)) ? 0 : (firstElementIndex + 1));
 			return _values[firstElementIndex]*(Fixed16(1.0f)-fraction) + _values[secondElementIndex]*fraction;
 		}
+	}
+
+	/// Get the hard value for the given position.
+	///
+	/// This will floor to the nearest value without any blending.
+	///
+	Fixed16 getHardValueAt(Fixed16 position) const 
+	{
+		const auto preciseElementIndex = (position * Fixed16(static_cast<int16_t>(elementCount)));
+		const uint8_t firstElementIndex = static_cast<uint8_t>(preciseElementIndex.toRawInteger());
+		return _values[firstElementIndex];
 	}
 
 private:

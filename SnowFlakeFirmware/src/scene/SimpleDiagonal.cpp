@@ -18,44 +18,43 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "SimpleRandomParticle.hpp"
+#include "SimpleDiagonal.hpp"
 
 
 #include "../InterpolatingArray.hpp"
-#include "../RandomFrameCounters.hpp"
+#include "../LedMaps.hpp"
 
 
 namespace scene {
-namespace SimpleRandomParticle {
+namespace SimpleDiagonal {
 
 
-/// Create a random frame counter to show the particles.
+/// The bars array with the ramp for the effect.
 ///
-const RandomFrameCounters<200, 400> gRandomFrameCounters;
-
-/// The animation for a single particle..
-///
-const Fixed16 cAnimation[] = {
-	Fixed16(0.2f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(1.0f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.5f),
-	Fixed16(0.5f), Fixed16(0.3f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.9f), Fixed16(0.5f), Fixed16(0.5f),
-	Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.3f), Fixed16(0.5f), Fixed16(0.3f), Fixed16(0.5f), Fixed16(0.5f),
+const Fixed16 cBars[] = {
+	Fixed16(1.0f), Fixed16(0.2f)
 };
 
+/// The number of elements in the bars array.
+///
+const uint8_t cBarsElementCount = sizeof(cBars)/sizeof(Fixed16);
+	
 /// The interpolating array.
 ///
-const InterpolatingArray<sizeof(cAnimation)/sizeof(Fixed16)> cAnimationInterpolation(cAnimation);
+const InterpolatingArray<cBarsElementCount> cBarsInterpolation(cBars);
 
 
-void initialize(SceneData *data)
+void initialize(SceneData*)
 {
-	gRandomFrameCounters.initialize(data);
+	// empty
 }
 
 
-Frame getFrame(SceneData *data, FrameIndex)
+Frame getFrame(SceneData*, FrameIndex frameIndex)
 {
-	return gRandomFrameCounters.getFrame(data, [](Fixed16 x)->PixelValue{
-		return cAnimationInterpolation.getSmoothValueAt(x);
+	return Frame([=](uint8_t pixelIndex)->PixelValue{
+		const auto position = PixelValue(PixelValue::normalFromRange<uint32_t>(0, cFrameCount, frameIndex) - (LedMaps::cDiagonal[pixelIndex] * Fixed16(1.2f)));
+		return cBarsInterpolation.getSmoothValueAt(position.wrapped());
 	});
 }
 

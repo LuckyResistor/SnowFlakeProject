@@ -24,6 +24,29 @@
 namespace scene {
 namespace IceSparkle {
 
+/// The bars array with the ramp for the effect.
+///
+const Fixed16 cSparkle[] = {
+	Fixed16(1.0f), Fixed16(1.0f), Fixed16(1.0f), Fixed16(0.2f), Fixed16(0.2f), Fixed16(1.0f), Fixed16(0.4f), Fixed16(0.4f),
+	Fixed16(0.4f), Fixed16(0.4f), Fixed16(1.0f), Fixed16(1.0f), Fixed16(0.2f), Fixed16(1.0f), Fixed16(0.2f), Fixed16(1.0f),
+	Fixed16(1.0f), Fixed16(0.2f), Fixed16(0.2f), Fixed16(0.2f), Fixed16(1.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+	Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+	Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+	Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+	Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+	Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+	Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+	Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+	Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+	Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+	Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+	Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f), Fixed16(0.0f),
+};
+
+/// The number of elements in the bars array.
+///
+const uint8_t cSparkleCount = sizeof(cSparkle)/sizeof(Fixed16);
+
 
 void initialize(SceneData*)
 {

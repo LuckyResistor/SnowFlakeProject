@@ -21,48 +21,22 @@
 #pragma once
 
 
-#include <cstdint>
+#include "Fixed16.hpp"
+#include "Display.hpp"
 
 
-/// The display module
+/// Shared LED Maps
 ///
-namespace Display {
+namespace LedMaps {
 
 
-/// The maximum level for the display
+/// A map to for a clockwise motion.
 ///
-const uint8_t cMaximumLevel = 64;
+extern const Fixed16 cClockwise[Display::cLedCount];
 
-/// The LED count.
+/// A map for a motion from top left to bottom right.
 ///
-const uint8_t cLedCount = 19;
+extern const Fixed16 cDiagonal[Display::cLedCount];
 
 
-/// Initialize the display module.
-///
-void initialize();
-
-/// Set the level for one single LED.
-///
-/// @param ledIndex The LED index from 0-18.
-/// @param level The LED brightness level from 0-64. 0 = dark, 64 = 100% on.
-///
-void setLedLevel(uint8_t ledIndex, uint8_t level);
-
-/// Wait for the next frame and show.
-///
-/// At 250Hz, this is for a frame rate of ~31 fps, or every 32ms.
-///
-void synchronizeAndShow();
-
-/// Activate a test pattern.
-///
-/// The test pattern simply toggles the LED state on each write to get
-/// a better impression of the distribution of the value changes.
-/// The initial LED state is high.
-///
-void activateTestPattern();
-
-	
 }
-

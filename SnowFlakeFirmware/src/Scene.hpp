@@ -39,6 +39,7 @@ public:
 		IceSparkle,
 		SimpleShift,
 		SimpleRotation,
+		SimpleDiagonal,
 		SimpleFlash,
 		SimpleRandomParticle
 	};
