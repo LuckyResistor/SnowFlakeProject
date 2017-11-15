@@ -93,6 +93,13 @@ uint16_t getRandom16(uint16_t minimum, uint16_t maximum)
 }
 
 
+uint8_t getRandom8(uint8_t minimum, uint8_t maximum)
+{
+	std::uniform_int_distribution<> distribution(minimum, maximum);
+	return distribution(gRandomGeneratorEngine);
+}
+
+
 }
 
 

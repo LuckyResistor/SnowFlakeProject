@@ -33,10 +33,6 @@
 namespace Display {
 
 
-/// The number of LEDs
-///
-const uint8_t cLedCount = 19;
-
 /// The masks for all LEDs in the order of the display.
 ///
 const uint32_t cLedMask0 = (1UL<<0);
@@ -89,10 +85,6 @@ const uint32_t cPortMaskLed =
 	cLedMask0|cLedMask1|cLedMask2|cLedMask3|cLedMask4|cLedMask5|cLedMask6|cLedMask7|
 	cLedMask8|cLedMask9|cLedMask10|cLedMask11|cLedMask12|cLedMask13|cLedMask14|cLedMask15|
 	cLedMask16|cLedMask17|cLedMask18;
-
-/// The maximum level.
-///
-const uint8_t cMaximumLevel = 64;
 
 /// The number of initial LED masks.
 ///

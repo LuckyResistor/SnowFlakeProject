@@ -256,6 +256,12 @@
     <Compile Include="src\InterpolatingArray.hpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\LedMaps.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\LedMaps.hpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\main.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -302,6 +308,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\scene\IceSparkle.hpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\scene\SimpleDiagonal.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\scene\SimpleDiagonal.hpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\scene\SimpleRandomParticle.cpp">

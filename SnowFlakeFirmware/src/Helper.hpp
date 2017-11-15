@@ -65,6 +65,14 @@ uint32_t getRandom32(uint32_t minimum, uint32_t maximum);
 ///
 uint16_t getRandom16(uint16_t minimum, uint16_t maximum);
 
+/// Get a pseudo random number in the selected range.
+///
+/// @param minimum The minimum value for the pseudo random number, including this number.
+/// @param maximum The maximum value for the pseudo random number, including this number.
+/// @return A pseudo random number in the selected range.
+///
+uint8_t getRandom8(uint8_t minimum, uint8_t maximum);
+
 
 }
 

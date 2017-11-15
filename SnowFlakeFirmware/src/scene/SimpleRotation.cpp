@@ -22,50 +22,27 @@
 
 
 #include "../InterpolatingArray.hpp"
+#include "../LedMaps.hpp"
 
 
 namespace scene {
 namespace SimpleRotation {
 
 
-/// The number of elements in the bars array.
-///
-const uint8_t cBarsElementCount = 16;
-
 /// The bars array with the ramp for the effect.
 ///
-const Fixed16 cBars[cBarsElementCount] = {
-	Fixed16(1.0f), Fixed16(0.8f), Fixed16(0.9f), Fixed16(0.7f), Fixed16(0.8f), Fixed16(0.3f), Fixed16(0.2f), Fixed16(0.1f),
-	Fixed16(0.05f), Fixed16(0.1f), Fixed16(0.05f), Fixed16(0.1f), Fixed16(0.05f), Fixed16(0.1f), Fixed16(0.05f), Fixed16(0.1f)
+const Fixed16 cBars[] = {
+	Fixed16(1.0f), Fixed16(0.8f), Fixed16(0.7f), Fixed16(0.6f), Fixed16(0.5f), Fixed16(0.3f), Fixed16(0.2f), Fixed16(0.3f),
+	Fixed16(0.25f), Fixed16(0.3f), Fixed16(0.2f), Fixed16(0.3f), Fixed16(0.5f), Fixed16(0.6f), Fixed16(0.7f), Fixed16(0.8f)
 };
 	
+/// The number of elements in the bars array.
+///
+const uint8_t cBarsElementCount = sizeof(cBars)/sizeof(Fixed16);
+
 /// The interpolating array.
 ///
 const InterpolatingArray<cBarsElementCount> cBarsInterpolation(cBars);
-
-/// A map to get the effect into a clockwise motion.
-///
-const Fixed16 cLedMapClockwise[19] = {
-	Fixed16( 0.0f * (1.0f/12.0f)), // LED 00
-	Fixed16( 2.0f * (1.0f/12.0f)), // LED 01
-	Fixed16( 4.0f * (1.0f/12.0f)), // LED 02
-	Fixed16( 6.0f * (1.0f/12.0f)), // LED 03
-	Fixed16( 8.0f * (1.0f/12.0f)), // LED 04
-	Fixed16(10.0f * (1.0f/12.0f)), // LED 05
-	Fixed16( 0.0f * (1.0f/12.0f)), // LED 06
-	Fixed16( 2.0f * (1.0f/12.0f)), // LED 07
-	Fixed16( 4.0f * (1.0f/12.0f)), // LED 08
-	Fixed16( 6.0f * (1.0f/12.0f)), // LED 09
-	Fixed16( 8.0f * (1.0f/12.0f)), // LED 10
-	Fixed16(10.0f * (1.0f/12.0f)), // LED 11
-	Fixed16( 1.0f * (1.0f/12.0f)), // LED 12
-	Fixed16( 3.0f * (1.0f/12.0f)), // LED 13
-	Fixed16( 5.0f * (1.0f/12.0f)), // LED 14
-	Fixed16( 7.0f * (1.0f/12.0f)), // LED 15
-	Fixed16( 9.0f * (1.0f/12.0f)), // LED 16
-	Fixed16(11.0f * (1.0f/12.0f)), // LED 17
-	Fixed16( 0.0f * (1.0f/12.0f)), // LED 18
-};
 
 
 void initialize(SceneData*)
@@ -77,8 +54,8 @@ void initialize(SceneData*)
 Frame getFrame(SceneData*, FrameIndex frameIndex)
 {
 	return Frame([=](uint8_t pixelIndex)->PixelValue{
-		const auto position = PixelValue(PixelValue::normalFromRange<uint32_t>(0, cFrameCount, frameIndex) - cLedMapClockwise[pixelIndex]);
-		return cBarsInterpolation.getValueAt(position.wrapped());
+		const auto position = PixelValue(PixelValue::normalFromRange<uint32_t>(0, cFrameCount, frameIndex) - LedMaps::cClockwise[pixelIndex]);
+		return cBarsInterpolation.getSmoothValueAt(position.wrapped());
 	});
 }
 
