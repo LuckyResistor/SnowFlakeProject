@@ -27,6 +27,7 @@
 #include "scene/SimpleRotation.hpp"
 #include "scene/SimpleDiagonal.hpp"
 #include "scene/SimpleRandomParticle.hpp"
+#include "scene/SimpleRandomFlicker.hpp"
 #include "scene/IceSparkle.hpp"
 
 
@@ -57,6 +58,7 @@ const SceneEntry cScenes[] __aligned(4) = {
 	LR_SCENE_ENTRY(SimpleDiagonal),
 	LR_SCENE_ENTRY(SimpleFlash),
 	LR_SCENE_ENTRY(SimpleRandomParticle),
+	LR_SCENE_ENTRY(SimpleRandomFlicker),
 	LR_SCENE_ENTRY(IceSparkle),
 	{Scene::Black, 0, nullptr, nullptr} // The end mark.
 };

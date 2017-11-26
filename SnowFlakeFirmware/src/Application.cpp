@@ -38,6 +38,8 @@ namespace Application {
 /// The scenes to display.
 ///
 const Scene::Name cScenesOnDisplay[] = {
+	Scene::IceSparkle,
+	Scene::SimpleRandomFlicker,
 	Scene::SimpleRandomParticle,
 	Scene::SimpleRotation,
 	Scene::SimpleDiagonal,

@@ -70,3 +70,19 @@ void Frame::blendTo(const Frame &frame, Fixed16 factor)
 	}
 }
 
+
+void Frame::multipleWith(const Frame &frame)
+{
+	for (uint8_t i = 0; i < cSize; ++i) {
+		pixelValue[i] *= frame.pixelValue[i];
+	}
+}
+
+
+void Frame::addWithLimit(const Frame &frame)
+{
+	for (uint8_t i = 0; i < cSize; ++i) {
+		pixelValue[i] = (pixelValue[i] + frame.pixelValue[i]).limited();
+	}
+}
+

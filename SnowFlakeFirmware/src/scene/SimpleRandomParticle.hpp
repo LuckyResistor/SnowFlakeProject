@@ -25,7 +25,8 @@
 
 
 /// \namespace scene::SimpleRandomParticle
-/// A simple scene which flashes all LEDs to iterate over all brightness levels.
+/// A simple scene which uses a random particle generator to create a smooth
+/// random effect.
 
 
 namespace scene {

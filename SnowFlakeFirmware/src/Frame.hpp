@@ -73,6 +73,18 @@ public:
 	///
 	void blendTo(const Frame &frame, Fixed16 factor);
 
+	/// Multiple this frame with another one, value by value.
+	///
+	/// @param frame The other frame to multiple with this one.
+	///
+	void multipleWith(const Frame &frame);
+
+	/// Add the values of another frame to this one, but limit the result to normals.
+	///
+	/// @param frame The other frame to add to this one.
+	///
+	void addWithLimit(const Frame &frame);
+
 public:
 	/// The LED level for all LEDs in the range from 0.0-1.0.
 	///

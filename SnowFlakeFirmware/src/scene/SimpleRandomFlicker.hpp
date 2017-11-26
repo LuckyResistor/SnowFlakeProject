@@ -24,12 +24,13 @@
 #include "../Scene.hpp"
 
 
-/// \namespace scene::IceSparkle
-/// An effect similar to sunlight sparkle in ice.
+/// \namespace scene::SimpleRandomFlicker
+/// A simple scene where each LED iterates over a long series of random
+/// numbers to create a flickering sensation.
 
 
 namespace scene {
-namespace IceSparkle {
+namespace SimpleRandomFlicker {
 
 
 /// The number of frames for this scene

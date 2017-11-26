@@ -41,7 +41,8 @@ public:
 		SimpleRotation,
 		SimpleDiagonal,
 		SimpleFlash,
-		SimpleRandomParticle
+		SimpleRandomParticle,
+		SimpleRandomFlicker,
 	};
 	
 public:

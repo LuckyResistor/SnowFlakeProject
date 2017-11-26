@@ -37,7 +37,7 @@
 /// The frame counter will use the first data elements in the scene data,
 /// two 16bit integer for each LED in the display.
 ///
-template<uint16_t minimumFrames, uint16_t maximumFrames>
+template<uint16_t minimumFrames, uint16_t maximumFrames, uint16_t dataOffset = 0>
 class RandomFrameCounters
 {
 public:
@@ -54,7 +54,7 @@ public:
 			// Get a random value for the current frame.
 			const uint16_t startFrame = Helper::getRandom16(0, frameCount-1);
 			// Assign the new random values.
-			const uint8_t dataIndex = (index*2);
+			const uint8_t dataIndex = (index*2) + (dataOffset*2);
 			data->int16[dataIndex] = frameCount;
 			data->int16[dataIndex+1] = startFrame;
 		}
@@ -72,7 +72,7 @@ public:
 		Frame frame;
 		for (uint8_t index = 0; index < Frame::cSize; ++index) {
 			// Get the current pixel value.
-			const uint8_t dataIndex = (index*2);
+			const uint8_t dataIndex = (index*2) + (dataOffset*2);
 			const uint16_t frameCount = data->int16[dataIndex];
 			const uint16_t currentFrame = data->int16[dataIndex+1];
 			const Fixed16 position = PixelValue::normalFromRange<uint16_t>(0, frameCount, currentFrame);

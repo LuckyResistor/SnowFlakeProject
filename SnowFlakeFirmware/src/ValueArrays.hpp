@@ -21,30 +21,17 @@
 #pragma once
 
 
-#include "../Scene.hpp"
+#include "Fixed16.hpp"
 
 
-/// \namespace scene::IceSparkle
-/// An effect similar to sunlight sparkle in ice.
-
-
-namespace scene {
-namespace IceSparkle {
-
-
-/// The number of frames for this scene
+/// Shared value arrays between scenes.
 ///
-const uint32_t cFrameCount = 300;
+namespace ValueArrays {
 
-/// The function to initialize this scene.
-///
-void initialize(SceneData *data);
 
-/// The function to get a frame from this scene.
+/// A long series of random values.
 ///
-Frame getFrame(SceneData *data, FrameIndex frameIndex);
+extern const Fixed16 cRandom[256];
 
 
 }
-}
-

@@ -26,7 +26,7 @@
 
 /// This is a helper which implements interpolating an array (vector) of values.
 ///
-template<uint8_t elementCount>
+template<uint16_t elementCount>
 class InterpolatingArray
 {
 public:
@@ -40,12 +40,12 @@ public:
 public:
 	/// Get the smooth value at the given position.
 	///
-	/// This will blend neighbour values into each other for a smooth transition.
+	/// This will blend neighbor values into each other for a smooth transition.
 	///
 	Fixed16 getSmoothValueAt(Fixed16 position) const 
 	{
 		const auto preciseElementIndex = (position * Fixed16(static_cast<int16_t>(elementCount)));
-		const uint8_t firstElementIndex = static_cast<uint8_t>(preciseElementIndex.toRawInteger());
+		const auto firstElementIndex = static_cast<uint16_t>(preciseElementIndex.toRawInteger());
 		const auto fraction = preciseElementIndex.getFraction();
 		if (fraction.isZero()) {
 			return _values[firstElementIndex];
@@ -62,7 +62,7 @@ public:
 	Fixed16 getHardValueAt(Fixed16 position) const 
 	{
 		const auto preciseElementIndex = (position * Fixed16(static_cast<int16_t>(elementCount)));
-		const uint8_t firstElementIndex = static_cast<uint8_t>(preciseElementIndex.toRawInteger());
+		const auto firstElementIndex = static_cast<uint16_t>(preciseElementIndex.toRawInteger());
 		return _values[firstElementIndex];
 	}
 

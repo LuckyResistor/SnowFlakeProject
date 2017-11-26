@@ -18,33 +18,40 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#pragma once
+#include "SimpleRandomFlicker.hpp"
 
 
-#include "../Scene.hpp"
-
-
-/// \namespace scene::IceSparkle
-/// An effect similar to sunlight sparkle in ice.
+#include "../InterpolatingArray.hpp"
+#include "../RandomFrameCounters.hpp"
+#include "../ValueArrays.hpp"
 
 
 namespace scene {
-namespace IceSparkle {
+namespace SimpleRandomFlicker {
 
 
-/// The number of frames for this scene
+/// Create a random frame counter to show the particles.
 ///
-const uint32_t cFrameCount = 300;
+const RandomFrameCounters<10, 512> gRandomFrameCounters;
 
-/// The function to initialize this scene.
+/// The interpolating array.
 ///
-void initialize(SceneData *data);
+const InterpolatingArray<sizeof(ValueArrays::cRandom)/sizeof(Fixed16)> cAnimationInterpolation(ValueArrays::cRandom);
 
-/// The function to get a frame from this scene.
-///
-Frame getFrame(SceneData *data, FrameIndex frameIndex);
+
+void initialize(SceneData *data)
+{
+	gRandomFrameCounters.initialize(data);
+}
+
+
+Frame getFrame(SceneData *data, FrameIndex)
+{
+	return gRandomFrameCounters.getFrame(data, [](Fixed16 x)->PixelValue{
+		return cAnimationInterpolation.getHardValueAt(x) * Fixed16(0.5f) + Fixed16(0.25f);
+	});
+}
 
 
 }
 }
-
