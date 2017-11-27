@@ -37,6 +37,7 @@ public:
 	enum Name : uint8_t {
 		Black,
 		IceSparkle,
+		SkyWithStars,
 		SimpleShift,
 		SimpleRotation,
 		SimpleDiagonal,

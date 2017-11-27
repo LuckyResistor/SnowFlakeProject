@@ -85,6 +85,12 @@ public:
 	///
 	void addWithLimit(const Frame &frame);
 
+	/// Subtract the values of another frame to this one, but limit the result to normals.
+	///
+	/// @param frame The other frame to subtract from this one.
+	///
+	void subtractWithLimit(const Frame &frame);
+
 public:
 	/// The LED level for all LEDs in the range from 0.0-1.0.
 	///

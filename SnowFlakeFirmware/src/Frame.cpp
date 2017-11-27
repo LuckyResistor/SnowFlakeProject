@@ -86,3 +86,11 @@ void Frame::addWithLimit(const Frame &frame)
 	}
 }
 
+
+void Frame::subtractWithLimit(const Frame &frame)
+{
+	for (uint8_t i = 0; i < cSize; ++i) {
+		pixelValue[i] = (pixelValue[i] - frame.pixelValue[i]).limited();
+	}
+}
+

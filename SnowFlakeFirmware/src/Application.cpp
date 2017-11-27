@@ -38,6 +38,7 @@ namespace Application {
 /// The scenes to display.
 ///
 const Scene::Name cScenesOnDisplay[] = {
+	Scene::SkyWithStars,
 	Scene::IceSparkle,
 	Scene::SimpleRandomFlicker,
 	Scene::SimpleRandomParticle,
@@ -57,8 +58,8 @@ const uint32_t cBlendDuration = 80;
 
 /// Duration how long a scene is shown in milliseconds.
 ///
-const uint32_t cSceneDuration = 20000;
-	
+const uint32_t cSceneDuration = 30000;
+
 
 /// The currently displayed scene
 ///

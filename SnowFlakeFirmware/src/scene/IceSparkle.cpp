@@ -95,7 +95,7 @@ Frame getFrame(SceneData *data, FrameIndex frameIndex)
 	// Create the sparkle values frame
 	auto sparkleValueFrame = gSparkleFrameCounters.getFrame(data, [](Fixed16 x)->PixelValue{
 		// Create a +/- 0.25 value from the random values.
-		return cSparkleValuesInterpolation.getHardValueAt(x) * Fixed16(0.5f);// - Fixed16(0.25f);
+		return cSparkleValuesInterpolation.getHardValueAt(x) * Fixed16(0.5f) - Fixed16(0.25f);
 	});
 	// Create a frame with the sparkle ramp and multiple the value frame with it.
 	sparkleValueFrame.multipleWith(Frame([=](uint8_t pixelIndex)->PixelValue{

@@ -29,6 +29,7 @@
 #include "scene/SimpleRandomParticle.hpp"
 #include "scene/SimpleRandomFlicker.hpp"
 #include "scene/IceSparkle.hpp"
+#include "scene/SkyWithStars.hpp"
 
 
 namespace SceneManager {
@@ -60,6 +61,7 @@ const SceneEntry cScenes[] __aligned(4) = {
 	LR_SCENE_ENTRY(SimpleRandomParticle),
 	LR_SCENE_ENTRY(SimpleRandomFlicker),
 	LR_SCENE_ENTRY(IceSparkle),
+	LR_SCENE_ENTRY(SkyWithStars),
 	{Scene::Black, 0, nullptr, nullptr} // The end mark.
 };
 
