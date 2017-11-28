@@ -256,7 +256,7 @@ uint8_t getStandLength()
 }
 
 
-void sendData(uint32_t data)
+void sendData(uint32_t)
 {
 	// Disable the communication module if the data lines are used for tracing.
 	if (cTraceOutputPins == TraceOutputPins::DataLines) {
