@@ -261,28 +261,28 @@ void onInterrupt()
 	// The display buffer to show.
 	const Buffer &buffer = gBuffer[gDisplayedBufferIndex];
 	// The current state of the IO lines without the LEDs.
-	const uint32_t portState = (PORT->Group[0].OUT.reg & (~cPortMaskLed));
+	const uint32_t portState = (PORT_IOBUS->Group[0].OUT.reg & (~cPortMaskLed));
 	// Configure the next CC0 value
 	TC0->COUNT16.CC[0].reg = cTimingValues[currentPwmValue];
 	while (TC0->COUNT16.STATUS.bit.SYNCBUSY) {};	
 	// Check for the special case of the first PWM values.
 	if (currentPwmValue == 0) {
 		// Display all initial masks.
-		PORT->Group[0].OUT.reg = portState | buffer.mask[0];
-		PORT->Group[0].OUT.reg = portState | buffer.mask[1];
+		PORT_IOBUS->Group[0].OUT.reg = portState | buffer.mask[0];
+		PORT_IOBUS->Group[0].OUT.reg = portState | buffer.mask[1];
 		__NOP();
 		__NOP();
 		__NOP();
-		PORT->Group[0].OUT.reg = portState | buffer.mask[2];
+		PORT_IOBUS->Group[0].OUT.reg = portState | buffer.mask[2];
 		for (uint8_t i = 3; i < cInitialLedMaskCount; ++i) {
 			Helper::delayNop(cInitialTimingValues[i]);
-			PORT->Group[0].OUT.reg = portState | buffer.mask[i];
+			PORT_IOBUS->Group[0].OUT.reg = portState | buffer.mask[i];
 		}
 		// Update the PWM counter to the first regular step.
 		gPwmCounter = cInitialLedMaskCount;
 	} else {
 		// Send the new mask to the port
-		PORT->Group[0].OUT.reg = portState | buffer.mask[currentPwmValue];
+		PORT_IOBUS->Group[0].OUT.reg = portState | buffer.mask[currentPwmValue];
 		// Increase the PWM counter for the next call.
 		++gPwmCounter;
 		if (gPwmCounter>=cMaximumLevel) {
