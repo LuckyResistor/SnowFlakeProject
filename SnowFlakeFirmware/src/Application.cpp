@@ -70,6 +70,22 @@ uint8_t gCurrentSceneIndex = 0;
 uint32_t gLastSceneBlend = 0;
 
 
+/// Display an error state with the LEDs of the board.
+///
+__attribute__((noreturn))
+void displayError(uint8_t errorCode)
+{
+	while (true) {
+		Display::setLedLevel(errorCode, Display::cMaximumLevel);
+		Display::synchronizeAndShow();
+		Helper::delayMs(500);	
+		Display::setLedLevel(errorCode, 0);
+		Display::synchronizeAndShow();
+		Helper::delayMs(500);
+	}
+}
+
+
 void initialize()
 {
 	// Initialize all modules.
@@ -80,6 +96,12 @@ void initialize()
 	SceneManager::initialize();
 	Player::initialize();
 
+	// Wait for the negotiation in the communication between the elements.
+	if (!Communication::waitForNegotiation()) {
+		// If there was any error, go into error mode.
+		displayError(static_cast<uint8_t>(Communication::getError()));
+	}
+	
 	// Blend to the first scene from black.
 	Player::displayScene(Scene::Black);
 	gCurrentSceneIndex = Helper::getRandom8(0, cScenesOnDisplayCount-1);

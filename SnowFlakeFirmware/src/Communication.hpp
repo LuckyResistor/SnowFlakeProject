@@ -29,8 +29,29 @@
 namespace Communication {
 
 
+/// The function called after a synchronization request is received on a client.
+///
 typedef void (*SynchronizationFn)();
+
+/// The function which is called if a new value is read on a client.
+///
 typedef void (*ReadDataFn)(uint32_t data);
+
+/// Errors for the communication.
+///
+enum class Error : uint8_t {
+	/// No error
+	///
+	None = 0,
+	
+	/// A timeout occurred while waiting for the data input to be set back to the low state.
+	///
+	TimeoutWaitingForLow = 1,
+	
+	/// A timeout occurred while waiting for the identifier from the previous element.
+	///
+	TimeoutWaitingForIdentifier = 2,
+};
 
 
 /// Initialize the communication component.
@@ -46,7 +67,15 @@ void initialize();
 /// The methods getIdentifier() and getStandLength() can be used after
 /// the negotiation.
 ///
-void waitForNegotiation();
+/// @return true on success, false on any error.
+///
+bool waitForNegotiation();
+
+/// Get the error code.
+///
+/// @return The error code.
+///
+Error getError();
 
 /// Check the identifier of this board.
 ///
@@ -65,7 +94,7 @@ uint8_t getIdentifier();
 ///
 /// @return The number of snow flakes in the stand.
 ///
-uint8_t getStandLength();
+uint8_t getStrandLength();
 
 /// Send data to all other boards.
 ///

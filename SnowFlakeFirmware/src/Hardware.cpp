@@ -156,6 +156,73 @@ void initialize()
 }
 
 
+void setPortConfiguration(PortName port, PortConfiguration configuration, PortPull pull)
+{
+	const uint32_t portMask = getMaskForPort(port);
+	if (configuration == PortConfiguration::Output) {
+		PORT->Group[0].DIRSET.reg = portMask;
+	} else {
+		PORT->Group[0].DIRCLR.reg = portMask;
+	}
+	uint8_t pinConfig = 0;
+	if (configuration == PortConfiguration::Input) {
+		pinConfig |= PORT_PINCFG_INEN;
+	}
+	if (pull != PortPull::None) {
+		pinConfig |= PORT_PINCFG_PULLEN;
+	}
+	PORT->Group[0].PINCFG[static_cast<uint8_t>(port)].reg = pinConfig;
+	if (pull == PortPull::Up) {
+		PORT->Group[0].OUTSET.reg = portMask;
+	} else if (pull == PortPull::Down) {
+		PORT->Group[0].OUTCLR.reg = portMask;		
+	}
+}
+
+
+void setPeripheralMultiplexing(PortName port, Multiplexing muxFunction)
+{
+	const uint8_t portIndex = static_cast<uint8_t>(port);
+	if (muxFunction == Multiplexing::Off) {
+		PORT->Group[0].PINCFG[portIndex].reg &= (~PORT_PINCFG_PMUXEN);
+	} else {
+		uint8_t nativeMuxValue = 0;
+		switch (muxFunction) {
+			case Multiplexing::A: nativeMuxValue = PORT_PMUX_PMUXE_A_Val; break;
+			case Multiplexing::B: nativeMuxValue = PORT_PMUX_PMUXE_B_Val; break;
+			case Multiplexing::C: nativeMuxValue = PORT_PMUX_PMUXE_C_Val; break;
+			case Multiplexing::D: nativeMuxValue = PORT_PMUX_PMUXE_D_Val; break;
+			case Multiplexing::E: nativeMuxValue = PORT_PMUX_PMUXE_E_Val; break;
+			case Multiplexing::G: nativeMuxValue = PORT_PMUX_PMUXE_G_Val; break;
+			case Multiplexing::H: nativeMuxValue = PORT_PMUX_PMUXE_H_Val; break;
+			default: break;
+		}
+		const uint8_t mask = (((portIndex&1)==0)?0xf0:0x0f);
+		const uint8_t data = (nativeMuxValue << (((portIndex&1)==0)?0:4));
+		PORT->Group[0].PMUX[portIndex/2].reg = (PORT->Group[0].PMUX[portIndex/2].reg & mask) | data;
+		PORT->Group[0].PINCFG[portIndex].reg |= PORT_PINCFG_PMUXEN;		
+	}
+}
+
+
+void setOutput(PortName port, PortOutput output)
+{
+	const uint32_t mask = getMaskForPort(port);
+	if (output == PortOutput::Low) {
+		PORT->Group[0].OUTCLR.reg = mask;
+	} else {
+		PORT->Group[0].OUTSET.reg = mask;		
+	}
+}
+
+
+bool getInput(PortName port)
+{
+	const uint32_t mask = getMaskForPort(port);
+	return (PORT->Group[0].IN.reg & mask) != 0;
+}
+
+
 void setTraceOutputA()
 {
 	if (cTraceOutputPins != TraceOutputPins::Disabled) {
