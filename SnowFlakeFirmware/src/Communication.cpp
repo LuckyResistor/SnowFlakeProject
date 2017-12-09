@@ -22,10 +22,14 @@
 
 
 #include "Configuration.hpp"
+#include "ElapsedTimer.hpp"
 #include "Hardware.hpp"
 #include "Helper.hpp"
 
 #include "Chip.hpp"
+
+#include <algorithm>
+#include <limits>
 
 
 namespace Communication {
@@ -42,6 +46,7 @@ enum class Pulse : uint8_t {
 
 
 // Forward declarations
+void resetReadBuffer();
 void sendPulse(Pulse pulse);
 void sendNextBit();
 
@@ -59,33 +64,96 @@ const uint8_t cExtInterruptIndexDataIn = 13;
 const Hardware::PortName cPortDataOut = Hardware::PortName::PA15;
 
 
-/// The number of milliseconds to keep the high level on the output.
-///
-const uint16_t cNegotiationHighLevelDuration = 5; // ~5ms
-
 /// The pause between pulses.
 ///
-const uint16_t cPulseTimePause = 0x0200;
+const uint16_t cCounterTimePause = 0x0200;
 
 /// The timing for a zero bit.
 ///
-const uint16_t cPulseTimeZeroBit = 0x0200;
+const uint16_t cCounterTimeZeroBit = 0x0200;
 
 /// The timing for a one bit.
 ///
-const uint16_t cPulseTimeOneBit = 0x0400;
+const uint16_t cCounterTimeOneBit = 0x0400;
 
 /// The timing for a break/separator signal.
 ///
-const uint16_t cPulseTimeBreak = 0x0800;
+const uint16_t cCounterTimeBreak = 0x0800;
 
 /// The timing for a synchronization signal.
 ///
-const uint16_t cPulseTimeSynchronization = 0x1000;
+const uint16_t cCounterTimeSynchronization = 0x1000;
 
 /// The detection tolerance of the timings
 ///
-const uint16_t cPulseTimingTolerance = 0x0040;
+const uint16_t cCounterTimeTolerance = 0x0040;
+
+
+/// The duration of a counter cycle for the following timer calculations.
+///
+/// Formula:
+///    (1 / CPU_FREQ) * COUNTER_DIVISOR => duration in seconds.
+///
+/// CPU_FREQ        = 48'000'000
+/// COUNTER_DIVISOR = 64
+///
+const uint64_t cCpuFrequency = 48000000LL;
+const uint64_t cCounterDivisor = 64LL;
+const uint64_t cUnitFactorNs = 1000000000LL;
+const uint64_t cUnitDivisorNStoMS = 1000000LL;
+const uint64_t cCounterCycleDurationNs = (cUnitFactorNs*cCounterDivisor)/cCpuFrequency;
+const uint64_t cMaximumTimeOneBitNs = (std::max<uint64_t>(cCounterTimeZeroBit, cCounterTimeOneBit)+static_cast<uint64_t>(cCounterTimePause))*cCounterCycleDurationNs;
+const uint64_t cMaximumTimeBreakNs = static_cast<uint64_t>(cCounterTimeBreak+cCounterTimePause)*cCounterCycleDurationNs;
+const uint64_t cMaximumTime32BitValueNs = (cMaximumTimeOneBitNs*32LL)+cMaximumTimeBreakNs;
+
+
+/// A basic unit for the initial delays/timeouts.
+///
+const uint16_t cNegotiationTimeBlock = 50; // ~50ms
+
+/// The number of milliseconds to keep the high level on the output.
+///
+const uint16_t cNegotiationHighLevelDuration = (cTraceLongNegotiation ? (cNegotiationTimeBlock*8) : cNegotiationTimeBlock);
+
+/// The timeout waiting for the low level in milliseconds.
+///
+/// This has to be slightly longer then the high level itself.
+///
+const uint16_t cNegotiationWaitForLowLevelTimeout = cNegotiationHighLevelDuration + cNegotiationTimeBlock;
+
+/// The number of milliseconds to wait after the high level.
+///
+/// This is the delay after the master board sets the data out line back to low,
+/// before the first identifier is sent to the next board.
+///
+const uint16_t cNegotiationDelayBeforeIdentifier = cNegotiationTimeBlock;
+
+/// The number of milliseconds which takes to send one single data value.
+///
+const uint16_t cMaximumTimeToSendValue = static_cast<uint16_t>(cMaximumTime32BitValueNs/cUnitDivisorNStoMS)+1;
+
+/// The number of milliseconds to wait for the identifier.
+///
+/// This is calculated by the theoretical maximum time it takes for the identifier
+/// passed down the whole strand. This equals the maximum time to send one value,
+/// multiplied by the maximum number of elements in the strand plus one. This last 
+/// increment is required, because the last element will wait until the own identifier
+/// is sent to the next element before it is ready to wait for the synchronization.
+///
+const uint16_t cNegotiationWaitForIdentifierTimeout = cMaximumTimeToSendValue * (cConfigurationStrandElementCount + 1);
+
+/// The number of milliseconds to wait for the initial synchronization pulse.
+///
+/// The master waits `cNegotiationWaitForIdentifierTimeout` after sending the first identifier
+/// before it sends the initial synchronization pulse. Therefore this timeout has to be longer
+/// than the timeout to wait for the identifier. 
+///
+const uint16_t cNegotiationWaitForInitialSynchronization = cNegotiationWaitForIdentifierTimeout + cMaximumTimeToSendValue;
+
+/// The time-out for data being sent.
+///
+const uint32_t cDataSendTimeout = cMaximumTimeToSendValue + 10;
+
 
 /// The mask/magic for the identifier.
 ///
@@ -96,6 +164,14 @@ const uint32_t cIdentifierMask = 0x1B720000;
 ///
 volatile uint32_t gReceivedData = 0;
 
+/// Flag that new data was received.
+///
+volatile bool gNewDataReceived = false;
+
+/// Flag is a synchronization pulse was received.
+///
+volatile bool gNewSynchronizationReceived = false;
+
 /// The error code.
 ///
 Error gError = Error::None;
@@ -103,10 +179,6 @@ Error gError = Error::None;
 /// The identifier for this board.
 ///
 uint8_t gIdentifier = 0;
-
-/// The length of the strand
-///
-uint8_t gStrandLength = 5; 
 
 /// The registered synchronization function.
 ///
@@ -138,6 +210,10 @@ volatile uint32_t gCurrentSendData = 0;
 /// For each bit, this counter counts the bit and also the pause.
 ///
 volatile uint8_t gCurrentSendBitCount = 0;
+
+/// A flag if the input data should be mirrored to the data output.
+///
+volatile bool gDataMirrorEnabled = false;
 
 
 void initialize()
@@ -178,12 +254,7 @@ void initialize()
 	// Enable the EIC after configuration.
 	EIC->CTRL.bit.ENABLE = true; 
 	while (EIC->STATUS.bit.SYNCBUSY) {}; // Wait until the component is enabled.
-		
-	// Enable the actual interrupt for external interrupt lines.
-	NVIC_ClearPendingIRQ(EIC_IRQn);
-	NVIC_SetPriority(EIC_IRQn, 3);
-	NVIC_EnableIRQ(EIC_IRQn);
-	
+			
 	// Prepare counter 3 to send pulses on the output.
 	PM->APBCMASK.bit.TC3_ = true; // Enable power for counter 3
 	// Send the main clock to the counter.
@@ -192,6 +263,7 @@ void initialize()
 		GCLK_CLKCTRL_GEN_GCLK0 |
 		GCLK_CLKCTRL_CLKEN;
 	while (GCLK->STATUS.bit.SYNCBUSY) {}; // Wait for synchronization
+
 	// Configure the counter
 	TC3->COUNT16.CTRLA.reg =
 		TC_CTRLA_PRESCALER_DIV64 |
@@ -200,17 +272,20 @@ void initialize()
 	while (TC3->COUNT16.STATUS.bit.SYNCBUSY) {};
 	// Configure the counter in one-shot mode.
 	TC3->COUNT16.CTRLBSET.reg = TC_CTRLBSET_ONESHOT;
+	while (TC3->COUNT16.STATUS.bit.SYNCBUSY) {};
 	// Configure default values for the CC registers.
-	TC3->COUNT16.CC[1].reg = 0;
-	TC3->COUNT16.CC[0].reg = 0;
+	TC3->COUNT16.CC[0].reg = cCounterTimeBreak + cCounterTimePause;
+	while (TC3->COUNT16.STATUS.bit.SYNCBUSY) {};
+	TC3->COUNT16.CC[1].reg = cCounterTimeBreak;
+	while (TC3->COUNT16.STATUS.bit.SYNCBUSY) {};
 	// Enable interrupt on overflow.
 	TC3->COUNT16.INTENSET.bit.OVF = true;
-	while (TC3->COUNT16.STATUS.bit.SYNCBUSY) {};		
+	while (TC3->COUNT16.STATUS.bit.SYNCBUSY) {};
 	// Enable the counter.
 	TC3->COUNT16.CTRLA.bit.ENABLE = true;
 	while (TC3->COUNT16.STATUS.bit.SYNCBUSY) {};
 	// Stop the counter and reset it to zero.
-	TC3->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_STOP;
+	TC3->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_RETRIGGER;
 	while (TC3->COUNT16.STATUS.bit.SYNCBUSY) {};
 	
 	// Enable the actual interrupt for counter 3
@@ -233,56 +308,176 @@ void initialize()
 }
 
 
-/// Connect the timer to the output.
+/// Connect the timer to the data output.
 ///
-void connectTimerWithDataOutput()
+void enableTimerDataOutput()
 {
 	// Change the MUX setting of the output pin to function E, which is connected to the timer.
 	Hardware::setPortConfiguration(cPortDataOut, Hardware::PortConfiguration::Disabled);
 	Hardware::setPeripheralMultiplexing(cPortDataOut, Hardware::Multiplexing::E);
 }
 
+
+/// Revert the data output port into regular IO port
+///
+void disableTimerDataOutput()
+{
+	Hardware::setPortConfiguration(cPortDataOut, Hardware::PortConfiguration::Output);
+	Hardware::setPeripheralMultiplexing(cPortDataOut, Hardware::Multiplexing::Off);	
+}
+
+
+/// Enable the interrupt to capture values from data in.
+///
+void enableDataInputInterrupt()
+{
+	__disable_irq();
+	NVIC_ClearPendingIRQ(EIC_IRQn);
+	NVIC_SetPriority(EIC_IRQn, 3);
+	NVIC_EnableIRQ(EIC_IRQn);
+	__enable_irq();
+}
+
+
+/// Enable data mirroring.
+///
+void enableDataMirroringMode()
+{
+	disableTimerDataOutput();
+	gDataMirrorEnabled = true;
+}
+
+
+/// Wait for the given state to change.
+///
+/// @param state The current state which shall change.
+/// @param timeout The timeout in milliseconds.
+/// @return true if the state changes, false if there was a timeout.
+///
+bool waitForInputStateChange(Hardware::PortState state, uint32_t timeout)
+{
+	ElapsedTimer elapsedTimer;
+	elapsedTimer.start();
+	while (Hardware::getInput(cPortDataIn) == state) {
+		if (elapsedTimer.hasTimeout(timeout)) {
+			return false;
+		}
+	}	
+	return true;
+}
+
+
+/// Put the output into high state and wait for a signal on input.
+///
+/// @return true if the input signal was detected, false if there was a timeout.
+///
+bool signalNextAndWaitForSignalFromPrevious()
+{
+	// Set output to high to signal next elements in the strand they are not the first one.
+	Hardware::setOutput(cPortDataOut, Hardware::PortState::High);
+	// Wait for the data input to go into high state.
+	return waitForInputStateChange(Hardware::PortState::Low, cNegotiationHighLevelDuration);
+}
+
+
+/// Negotiation in master mode.
+///
+/// @return true on success, false on any error.
+///
+bool masterNegotiation()
+{
+	// Set the output back to low, this will happen after the `cNegotiationHighLevelDuration` time.
+	Hardware::setOutput(cPortDataOut, Hardware::PortState::Low);
+	// Attach the output port to the timer.
+	enableTimerDataOutput();
+	// Wait a moment to give other elements the time to prepare for the incoming identifier.
+	Helper::delayMs(cNegotiationDelayBeforeIdentifier);
+	// Send identifier 1 to the next element.
+	if (!sendData(cIdentifierMask + 1)) {
+		gError = Error::TimeoutWaitingToSendData;
+		return false;		
+	}
+	// Wait until all identifiers are sent along the strand.
+	Helper::delayMs(cNegotiationWaitForIdentifierTimeout);
+	// Send the synchronization signal, to start all boards at the same time.
+	if (!sendSynchronization()) {
+		gError = Error::TimeoutWaitingToSendData;
+		return false;		
+	}
+	// Wait for the synchronization being sent.
+	if (!waitUntilReadyToSend()) {
+		gError = Error::TimeoutWaitingToSendData;
+		return false;
+	}
+	// Success.
+	return true;
+}
+
+
+/// Negotiation in slave mode.
+///
+/// @return true on success, false on any error.
+///
+bool slaveNegotiation()
+{
+	// As slave we wait for the low state from the master to keep this synchronized.
+	if (!waitForInputStateChange(Hardware::PortState::High, cNegotiationWaitForLowLevelTimeout)) {
+		gError = Error::TimeoutWaitingForLow;
+		return false;		
+	}
+	// Set the output to low synchronized with the master. 
+	Hardware::setOutput(cPortDataOut, Hardware::PortState::Low);
+	// Connect the timer to the output
+	enableTimerDataOutput();
+	// Enable the interrupt to capture data from data in.
+	enableDataInputInterrupt();
+	// Reset the read buffer
+	resetReadBuffer();
+	// Wait for a received value. Expecting an identifier from the previous element.
+	if (!waitForData(cNegotiationWaitForIdentifierTimeout)) {
+		gError = Error::TimeoutWaitingForIdentifier;
+		return false;		
+	}
+	// Check what we got. Make sure this is a valid identifier.
+	const auto value = readData();
+	if ((value & 0xffffff00) == cIdentifierMask) {
+		gIdentifier = static_cast<uint8_t>(value & 0xff);
+		if (gIdentifier == 0 || gIdentifier >= 0x40) {
+			gError = Error::InvalidIdentifier;
+			return false;
+		}
+	} else {
+		gError = Error::InvalidIdentifier;
+		return false;
+	}
+	// Looks good. After receiving the correct identifier, send the next identifier down the strand.
+	sendData(cIdentifierMask + gIdentifier + 1);
+	// Wait until this value was sent.
+	if (!waitUntilReadyToSend()) {
+		gError = Error::TimeoutWaitingToSendData;
+		return false;
+	}
+	// Enable the data mirroring mode.
+	enableDataMirroringMode();
+	// Now wait for the synchronization signal from the master board.
+	if (!waitForSynchonization(cNegotiationWaitForInitialSynchronization)) {
+		gError = Error::TimeoutWaitingForInitialSynchronization;
+		return false;		
+	}
+	// Success.
+	return true;
+}
+
 	
 bool waitForNegotiation()
 {
-	// Set output to high to signal next elements in the strand they are not the first one.
-	Hardware::setOutput(cPortDataOut, Hardware::PortOutput::High);
-	// Wait for the data input to get to high state and keep it on high level for the given time.
-	bool isMaster = true;
-	for (uint16_t i = 0; i < cNegotiationHighLevelDuration; ++i) {
-		if (Hardware::getInput(cPortDataIn)) {
-			isMaster = false;
-		}
-		Helper::delayMs(1);
-	}
-	// Set the output back to low.
-	Hardware::setOutput(cPortDataOut, Hardware::PortOutput::Low);
-	// Wait until the input is back to low.
-	bool hasTimeout = true;
-	for (uint16_t i = 0; i < cNegotiationHighLevelDuration; ++i) {
-		if (!Hardware::getInput(cPortDataIn)) {
-			hasTimeout = false;
-			break;
-		}
-		Helper::delayMs(1);
-	}
-	if (hasTimeout) {
-		gError = Error::TimeoutWaitingForLow;
-		return false;
-	}
-	// Attach the output port to the timer.
-	connectTimerWithDataOutput();
-	// If we are in slave mode, we have to wait for the index number.
-	if (!isMaster) {
-		
-		// FIXME! Wait on the identifier from the previous element.
-		
+	// Check if there is a previous element.
+	const bool hasPreviousElement = signalNextAndWaitForSignalFromPrevious();
+	if (!hasPreviousElement) {
+		return masterNegotiation();
 	} else {
-		// In master mode, we send the identifier to the next element.
-		Helper::delayMs(cNegotiationHighLevelDuration);
-		sendData(cIdentifierMask + 1); // send identifier 1 to the next element.
+		return slaveNegotiation();
 	}
-	return true;
 }
 
 
@@ -298,51 +493,112 @@ uint8_t getIdentifier()
 }
 
 
-uint8_t getStrandLength()
-{
-	return gStrandLength;
-}
-
-
-void sendData(uint32_t data)
+bool sendData(uint32_t data)
 {
 	// Disable the communication module if the data lines are used for tracing.
 	if (cTraceOutputPins == TraceOutputPins::DataLines) {
-		return;
+		return false;
 	}
 
 	// If a send is in progress, wait until it finishes.
-	while (gCurrentSendBitCount > 0) {
-		Helper::delayMs(5);
+	ElapsedTimer elapsedTimer;
+	elapsedTimer.start();
+	while (!isReadyToSend()) {
+		if (elapsedTimer.hasTimeout(cDataSendTimeout)) {
+			return false;
+		}
 	}
 
 	// Store the data and trigger sending for the first bit.
 	gCurrentSendData = data;
-	sendNextBit();			
+	sendNextBit();
+	
+	// Success.
+	return true;
 }
 
 
-void sendSynchronization()
+bool sendSynchronization()
 {
 	// Disable the communication module if the data lines are used for tracing.
 	if (cTraceOutputPins == TraceOutputPins::DataLines) {
-		return;
+		return false;
 	}
 
 	// If a send is in progress, wait until it finishes.
-	while (gCurrentSendBitCount > 0) {
-		Helper::delayMs(5);
+	ElapsedTimer elapsedTimer;
+	elapsedTimer.start();
+	while (!isReadyToSend()) {
+		if (elapsedTimer.hasTimeout(cDataSendTimeout)) {
+			return false;
+		}
 	}
 
 	// Start sending a synchronization signal.
-	gCurrentSendBitCount = 32;
-	sendPulse(Pulse::Synchronization);	
+	gCurrentSendBitCount = 33;
+	sendPulse(Pulse::Synchronization);
+	
+	// Success.
+	return true;
 }
 
 
-uint32_t getData()
+bool isReadyToSend()
+{
+	return gCurrentSendBitCount == 0;
+}
+
+
+bool waitUntilReadyToSend()
+{
+	ElapsedTimer elapsedTimer;
+	elapsedTimer.start();
+	while (!isReadyToSend()) {
+		if (elapsedTimer.hasTimeout(cDataSendTimeout)) {
+			return false; // Time-out
+		}
+	}
+	
+	// Success.
+	return true;
+}
+
+
+bool waitForData(uint32_t timeout)
+{
+	gNewDataReceived = false;
+	ElapsedTimer elapsedTimer;
+	elapsedTimer.start();
+	while (!gNewDataReceived) {
+		if (elapsedTimer.hasTimeout(timeout)) {
+			return false; // Time-out
+		}
+	}
+	
+	// Success.
+	return true;
+}
+
+
+uint32_t readData()
 {
 	return gReceivedData;
+}
+
+
+bool waitForSynchonization(uint32_t timeout)
+{
+	gNewSynchronizationReceived = false;
+	ElapsedTimer elapsedTimer;
+	elapsedTimer.start();
+	while (!gNewSynchronizationReceived) {
+		if (elapsedTimer.hasTimeout(timeout)) {
+			return false; // Time-out
+		}
+	}
+	
+	// Success.
+	return true;
 }
 
 
@@ -355,6 +611,18 @@ void registerSynchronisationFunction(SynchronizationFn synchronizationFn)
 void registerReadDataFunction(ReadDataFn readDataFn)
 {
 	gReadDataFn = readDataFn;
+}
+
+
+/// Restart timer 2
+///
+void restartTimer2()
+{
+	// This will set the counter back to zero and start it from there.
+	TC2->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_RETRIGGER;
+	while (TC2->COUNT16.STATUS.bit.SYNCBUSY) {}
+	// Also clear the overflow flag.
+	TC2->COUNT16.INTFLAG.bit.OVF = true;
 }
 
 
@@ -371,6 +639,25 @@ uint16_t getTimer2Value()
 }
 
 
+/// Reset the input read buffer.
+///
+void resetReadBuffer()
+{
+	gCurrentReadData = 0;
+	gCurrentReadBitCount = 0;
+	gReceivedData = 0;
+	gNewDataReceived = false;
+}
+
+
+/// Check if a pulse matches the given time
+///
+inline bool isPulseTimeEqual(const uint16_t pulseLength, const uint16_t expectedLength)
+{
+	return (pulseLength > (expectedLength - cCounterTimeTolerance) && pulseLength < (expectedLength + cCounterTimeTolerance));
+}
+
+
 /// Method called on each external interrupt.
 ///
 void onExternalInterrupt()
@@ -378,44 +665,53 @@ void onExternalInterrupt()
 	// Clear all interrupt flags.
 	EIC->INTFLAG.reg |= (1UL<<cExtInterruptIndexDataIn);
 	
-	const bool inputLevel = Hardware::getInput(cPortDataIn);
-	if (inputLevel == true) {
-		// Capture the current timestamp.
-		gInputRisingTimeStamp = getTimer2Value();
+	// Check the state of the data input line.
+	auto inputPortState = Hardware::getInput(cPortDataIn);
+	
+	// Mirror the signal if this is enabled
+	if (gDataMirrorEnabled) {
+		Hardware::setOutput(cPortDataOut, inputPortState);		
+	}
+	
+	// Measure the pulse lengths and detect the received signals.
+	if (inputPortState == Hardware::PortState::High) {
+		restartTimer2();
 	} else {
-		// Capture the current timestamp.
-		const uint16_t timeStamp = getTimer2Value();
-		// Calculate the pulse length
-		const uint16_t pulseLength = timeStamp - gInputRisingTimeStamp;
+		// Get the length of the pulse.
+		uint16_t pulseLength = getTimer2Value();
+		// Check for an overflow, in this case use the maximum pulse length.
+		if (TC2->COUNT16.INTFLAG.bit.OVF) {
+			pulseLength = std::numeric_limits<uint16_t>::max();
+		}
 		// Check which pulse matches.
-		if (pulseLength > (cPulseTimeZeroBit-cPulseTimingTolerance) && pulseLength < (cPulseTimeZeroBit+cPulseTimingTolerance)) {
+		if (isPulseTimeEqual(pulseLength, cCounterTimeZeroBit)) {
 			gCurrentReadData >>= 1;
 			++gCurrentReadBitCount;
-		} else if (pulseLength > (cPulseTimeOneBit-cPulseTimingTolerance) && pulseLength < (cPulseTimeOneBit+cPulseTimingTolerance)) {
+		} else if (isPulseTimeEqual(pulseLength, cCounterTimeOneBit)) {
 			gCurrentReadData >>= 1;
 			gCurrentReadData |= 0x80000000UL;
 			++gCurrentReadBitCount;
-		} else if (pulseLength > (cPulseTimeBreak-cPulseTimingTolerance) && pulseLength < (cPulseTimeBreak+cPulseTimingTolerance)) {
+		} else if (isPulseTimeEqual(pulseLength, cCounterTimeBreak)) {
 			if (gCurrentReadBitCount == 32) {
 				gReceivedData = gCurrentReadData;
+				gNewDataReceived = true;
 				if (gReadDataFn != nullptr) {
 					gReadDataFn(gReceivedData);
 				}
 			}
 			gCurrentReadBitCount = 0;
 			gCurrentReadData = 0;		
-		} else if (pulseLength > (cPulseTimeSynchronization-cPulseTimingTolerance) && pulseLength < (cPulseTimeSynchronization+cPulseTimingTolerance)) {
+		} else if (isPulseTimeEqual(pulseLength, cCounterTimeSynchronization)) {
 			if (gSynchronizationFn != nullptr) {
 				gSynchronizationFn();
 			}
+			gNewSynchronizationReceived = true;
 			gCurrentReadBitCount = 0;
 			gCurrentReadData = 0;		
 		} else {
-			// Unknown signal, reset everything.
-			gCurrentReadBitCount = 0;
-			gCurrentReadData = 0;
+			// Ignore any unknown pulse lengths. Could be noise.
 		}
-	}
+	}		
 }
 
 
@@ -424,14 +720,15 @@ void onExternalInterrupt()
 void sendPulse(Pulse pulse)
 {
 	// Prepare the timer for the pulse.
-	uint16_t pulseTime = cPulseTimePause;
+	uint16_t pulseTime = cCounterTimePause;
 	switch (pulse) {
-		case Pulse::ZeroBit: pulseTime = cPulseTimeZeroBit; break;
-		case Pulse::OneBit: pulseTime = cPulseTimeOneBit; break;
-		case Pulse::Break: pulseTime = cPulseTimeBreak; break;
-		case Pulse::Synchronization: pulseTime = cPulseTimeSynchronization; break;
+		case Pulse::ZeroBit: pulseTime = cCounterTimeZeroBit; break;
+		case Pulse::OneBit: pulseTime = cCounterTimeOneBit; break;
+		case Pulse::Break: pulseTime = cCounterTimeBreak; break;
+		case Pulse::Synchronization: pulseTime = cCounterTimeSynchronization; break;
 	}
-	TC3->COUNT16.CC[0].reg = pulseTime+cPulseTimePause;
+	TC3->COUNT16.CC[0].reg = pulseTime+cCounterTimePause;
+	while (TC3->COUNT16.STATUS.bit.SYNCBUSY) {};
 	TC3->COUNT16.CC[1].reg = pulseTime;
 	while (TC3->COUNT16.STATUS.bit.SYNCBUSY) {};
 	// Trigger the timer

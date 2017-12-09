@@ -149,7 +149,9 @@ void initializeTraceOutputs()
 
 void initialize()
 {
-	initializeDelayStart();
+	if (cTraceStartDelayed) {
+		initializeDelayStart();
+	}
 	initializeCpuClocks();
 	initializeCpuSpeed();
 	initializeTraceOutputs();
@@ -205,10 +207,10 @@ void setPeripheralMultiplexing(PortName port, Multiplexing muxFunction)
 }
 
 
-void setOutput(PortName port, PortOutput output)
+void setOutput(PortName port, PortState output)
 {
 	const uint32_t mask = getMaskForPort(port);
-	if (output == PortOutput::Low) {
+	if (output == PortState::Low) {
 		PORT->Group[0].OUTCLR.reg = mask;
 	} else {
 		PORT->Group[0].OUTSET.reg = mask;		
@@ -216,10 +218,14 @@ void setOutput(PortName port, PortOutput output)
 }
 
 
-bool getInput(PortName port)
+PortState getInput(PortName port)
 {
 	const uint32_t mask = getMaskForPort(port);
-	return (PORT->Group[0].IN.reg & mask) != 0;
+	if ((PORT->Group[0].IN.reg & mask) != 0) {
+		return PortState::High;
+	} else {
+		return PortState::Low;
+	}
 }
 
 

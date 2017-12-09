@@ -22,6 +22,7 @@
 
 
 #include "Communication.hpp"
+#include "Configuration.hpp"
 #include "Display.hpp"
 #include "Hardware.hpp"
 #include "Helper.hpp"
@@ -86,6 +87,46 @@ void displayError(uint8_t errorCode)
 }
 
 
+/// Run a communication test.
+///
+/// This will send a new value every two seconds and display it as binary 
+/// pattern on the snow flake.
+///
+void communicationTestMaster()
+{
+	Helper::delayMs(2000);
+	uint32_t value = 0;
+	while (true) {
+		for (uint8_t i = 0; i < Display::cLedCount; ++i) {
+			const bool isBitSet = ((value&(1UL<<i)) != 0);
+			Display::setLedLevel(i, (isBitSet ? Display::cMaximumLevel : 0));
+		}
+		Display::synchronizeAndShow();
+		Communication::sendData(value);
+		value += 1;
+		Helper::delayMs(2000);
+	}
+}
+
+
+/// Display the identifier of the board.
+///
+void displayBoardIdentifier()
+{
+	Display::setAllLedLevels(0);
+	Display::setLedLevel(Communication::getIdentifier(), Display::cMaximumLevel);
+	for (uint8_t i = 0; i < 10; ++i) {
+		Display::setLedLevel(Display::cLedCount-1, Display::cMaximumLevel);
+		Display::synchronizeAndShow();
+		Helper::delayMs(200);
+		Display::setLedLevel(Display::cLedCount-1, 0);
+		Display::synchronizeAndShow();
+		Helper::delayMs(200);
+	}
+}
+
+
+
 void initialize()
 {
 	// Initialize all modules.
@@ -101,6 +142,10 @@ void initialize()
 		// If there was any error, go into error mode.
 		displayError(static_cast<uint8_t>(Communication::getError()));
 	}
+
+	if (cTraceShowIdentifierOnStart) {
+		displayBoardIdentifier();
+	}	
 	
 	// Blend to the first scene from black.
 	Player::displayScene(Scene::Black);

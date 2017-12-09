@@ -49,6 +49,29 @@ enum class TraceOutputSource : uint8_t {
 };
 
 
+/// The number of elements in the strand.
+///
+const uint8_t cConfigurationStrandElementCount = 5;
+
+/// Should the start be delayed?
+///
+const bool cTraceStartDelayed = false; // false for production.
+
+/// Use a very long negotiation duration.
+///
+/// This is used if you have attached programmer to the chip which delays the
+/// start up to one second.
+///
+const bool cTraceLongNegotiation = true; // false for production.
+
+/// Display the identifier for two seconds after initialization.
+///
+/// If you enable this, each snow flake will briefly show the identifier after
+/// the negotiation. The identifier is displayed by lighting up the LED with the
+/// identifier number and the center LED.
+///
+const bool cTraceShowIdentifierOnStart = true; // false for production.
+
 /// The configuration for the trace outputs pins.
 ///
 const TraceOutputPins cTraceOutputPins = TraceOutputPins::Disabled; // Disabled for production.
@@ -56,4 +79,5 @@ const TraceOutputPins cTraceOutputPins = TraceOutputPins::Disabled; // Disabled 
 /// The configuration for the trace output source.
 ///
 const TraceOutputSource cTraceOutputSource = TraceOutputSource::Disabled; // Disabled for production.
+
 

@@ -204,6 +204,14 @@ void initialize()
 }
 
 
+void setAllLedLevels(uint8_t level)
+{
+	for (uint8_t i = 0; i < cLedCount; ++i) {
+		setLedLevel(i, level);
+	}
+}
+
+
 void setLedLevel(uint8_t ledIndex, uint8_t level)
 {
 	if (level > cMaximumLevel) {

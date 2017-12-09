@@ -90,9 +90,9 @@ enum class PortPull : uint8_t {
 	Down ///< Connect a pull down resistor.
 };
 
-/// The port output.
+/// The port state.
 ///
-enum class PortOutput : uint8_t {
+enum class PortState : uint8_t {
 	Low, ///< Set the port to high state.
 	High ///< Set the port to low state.
 };
@@ -119,11 +119,11 @@ constexpr uint32_t getMaskForPort(PortName port) {
 
 /// Set the output for a port configured as output.
 ///
-void setOutput(PortName port, PortOutput output);
+void setOutput(PortName port, PortState output);
 
 /// Get the input state from a port configured as input.
 ///
-bool getInput(PortName port);
+PortState getInput(PortName port);
 
 /// Set trace output A to high state.
 ///

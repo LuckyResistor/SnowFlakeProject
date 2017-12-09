@@ -33,3 +33,5 @@
 .vs/
 SnowFlakeFirmware/Debug/
 SnowFlakeFirmware/Release/
+SnowFlakeFirmware/jlink.config
+SnowFlakeFirmware/jlink.log

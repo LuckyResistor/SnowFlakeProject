@@ -25,8 +25,8 @@
     <preserveEEPROM>true</preserveEEPROM>
     <OverrideVtorValue>exception_table</OverrideVtorValue>
     <BootSegment>2</BootSegment>
-    <ResetRule>0</ResetRule>
-    <eraseonlaunchrule>0</eraseonlaunchrule>
+    <ResetRule>2</ResetRule>
+    <eraseonlaunchrule>1</eraseonlaunchrule>
     <EraseKey />
     <AsfFrameworkConfig>
       <framework-data xmlns="">
@@ -56,6 +56,18 @@
       <ToolName>Atmel-ICE</ToolName>
     </com_atmel_avrdbg_tool_atmelice>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
+    <com_atmel_avrdbg_tool_samice>
+      <ToolOptions>
+        <InterfaceProperties>
+          <SwdClock>4000000</SwdClock>
+        </InterfaceProperties>
+        <InterfaceName>SWD</InterfaceName>
+        <JlinkConfigFile>C:\Users\Lucky Resistor\Documents\Projects\SnowFlakeProject\SnowFlakeFirmware\jlink.config</JlinkConfigFile>
+      </ToolOptions>
+      <ToolType>com.atmel.avrdbg.tool.samice</ToolType>
+      <ToolNumber>50101153</ToolNumber>
+      <ToolName>J-Link</ToolName>
+    </com_atmel_avrdbg_tool_samice>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -238,6 +250,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Display.hpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ElapsedTimer.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ElapsedTimer.hpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Fixed16.cpp">

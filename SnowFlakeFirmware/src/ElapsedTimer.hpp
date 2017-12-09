@@ -24,49 +24,23 @@
 #include <cstdint>
 
 
-/// The display module
+/// A simple timer to measure elapsed time in milliseconds.
 ///
-namespace Display {
-
-
-/// The maximum level for the display
-///
-const uint8_t cMaximumLevel = 64;
-
-/// The LED count.
-///
-const uint8_t cLedCount = 19;
-
-
-/// Initialize the display module.
-///
-void initialize();
-
-/// Set all LED levels to the same value.
-///
-void setAllLedLevels(uint8_t level);
-
-/// Set the level for one single LED.
-///
-/// @param ledIndex The LED index from 0-18.
-/// @param level The LED brightness level from 0-64. 0 = dark, 64 = 100% on.
-///
-void setLedLevel(uint8_t ledIndex, uint8_t level);
-
-/// Wait for the next frame and show.
-///
-/// At 250Hz, this is for a frame rate of ~31 fps, or every 32ms.
-///
-void synchronizeAndShow();
-
-/// Activate a test pattern.
-///
-/// The test pattern simply toggles the LED state on each write to get
-/// a better impression of the distribution of the value changes.
-/// The initial LED state is high.
-///
-void activateTestPattern();
-
+class ElapsedTimer
+{
+public:
+	/// Start the timer.
+	///
+	void start();
 	
-}
+	/// Check the number of elapsed milliseconds since start.
+	///
+	uint32_t elapsedTime() const;
 
+	/// Check if a function run into a time-out after the given number of milliseconds.
+	///
+	bool hasTimeout(uint32_t timeout) const;
+
+private:
+	uint32_t _startTime; ///< The start time.
+};
