@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="8.3.2">
+<eagle version="8.5.1">
 <drawing>
 <settings>
-<setting alwaysvectorfont="no"/>
+<setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
@@ -145,7 +145,6 @@
 <schematic xreflabel="%F%N/%S.%C%R" xrefpart="/%S.%C%R">
 <libraries>
 <library name="frames" urn="urn:adsk.eagle:library:229">
-<description>&lt;b&gt;Frames for Sheet and Layout&lt;/b&gt;</description>
 <packages>
 </packages>
 <symbols>
@@ -184,8 +183,6 @@
 </symbols>
 <devicesets>
 <deviceset name="DINA3_L" urn="urn:adsk.eagle:component:13931/1" prefix="FRAME" uservalue="yes" library_version="1">
-<description>&lt;b&gt;FRAME&lt;/b&gt;&lt;p&gt;
-DIN A3, landscape with extra doc field</description>
 <gates>
 <gate name="G$1" symbol="DINA3_L" x="0" y="0"/>
 <gate name="G$2" symbol="DOCFIELD" x="287.02" y="0" addlevel="must"/>
@@ -203,7 +200,6 @@ DIN A3, landscape with extra doc field</description>
 <library name="lucky-resistor" urn="urn:adsk.eagle:library:481313">
 <packages>
 <package name="TQFP32-08" urn="urn:adsk.eagle:footprint:481455/1" library_version="1" library_locally_modified="yes">
-<description>&lt;B&gt;Thin Plasic Quad Flat Package&lt;/B&gt; Grid 0.8 mm</description>
 <wire x1="3.505" y1="3.505" x2="3.505" y2="-3.505" width="0.1524" layer="21"/>
 <wire x1="3.505" y1="-3.505" x2="-3.505" y2="-3.505" width="0.1524" layer="21"/>
 <wire x1="-3.505" y1="-3.505" x2="-3.505" y2="3.15" width="0.1524" layer="21"/>
@@ -278,8 +274,6 @@ DIN A3, landscape with extra doc field</description>
 <rectangle x1="-3.0286" y1="3.556" x2="-2.5714" y2="4.5466" layer="51"/>
 </package>
 <package name="CON-2X5-HARWIN-1.27" urn="urn:adsk.eagle:footprint:481406/1" library_version="6">
-<description>&lt;h2&gt;AVR JTAG Connector&lt;/h2&gt;
-&lt;p&gt;Using the Harwin 1.27mm 2x5 pin header for SMD montage&lt;/p&gt;</description>
 <smd name="5" x="0" y="-1.95" dx="2.4" dy="0.76" layer="1" rot="R90"/>
 <smd name="3" x="-1.27" y="-1.95" dx="2.4" dy="0.76" layer="1" rot="R90"/>
 <smd name="1" x="-2.54" y="-1.95" dx="2.4" dy="0.76" layer="1" rot="R90"/>
@@ -302,7 +296,6 @@ DIN A3, landscape with extra doc field</description>
 <circle x="-4.318" y="-1.27" radius="0.254" width="0.127" layer="21"/>
 </package>
 <package name="C4.5X2.5-02" urn="urn:adsk.eagle:footprint:481358/1" library_version="6">
-<description>&lt;b&gt;Capacitor&lt;/b&gt; 4.6mm x 3mm, grid 2.54mm (02)</description>
 <wire x1="1.27" y1="0" x2="0.381" y2="0" width="0.1524" layer="51"/>
 <wire x1="0.381" y1="0" x2="0.254" y2="0" width="0.1524" layer="21"/>
 <wire x1="0.254" y1="0" x2="0.254" y2="0.762" width="0.254" layer="21"/>
@@ -325,7 +318,6 @@ DIN A3, landscape with extra doc field</description>
 <text x="0" y="-1.524" size="1.016" layer="27" font="vector" ratio="10" align="top-center">&gt;VALUE</text>
 </package>
 <package name="C4.5X3-02" urn="urn:adsk.eagle:footprint:481359/1" library_version="6">
-<description>&lt;b&gt;Capacitor&lt;/b&gt; 4.6mm x 3mm, grid 2.54mm (02)</description>
 <wire x1="1.27" y1="0" x2="0.381" y2="0" width="0.1524" layer="51"/>
 <wire x1="0.381" y1="0" x2="0.254" y2="0" width="0.1524" layer="21"/>
 <wire x1="0.254" y1="0" x2="0.254" y2="0.762" width="0.254" layer="21"/>
@@ -348,7 +340,6 @@ DIN A3, landscape with extra doc field</description>
 <text x="0" y="-1.778" size="1.016" layer="27" font="vector" ratio="10" align="top-center">&gt;VALUE</text>
 </package>
 <package name="C7.0X2.4-04" urn="urn:adsk.eagle:footprint:481360/1" library_version="6">
-<description>&lt;b&gt;Capacitor&lt;/b&gt; 7.0mm x 2.4mm, grid 5.08mm (04)</description>
 <wire x1="0.254" y1="0.762" x2="0.254" y2="0" width="0.254" layer="21"/>
 <wire x1="0.254" y1="0" x2="0.254" y2="-0.762" width="0.254" layer="21"/>
 <wire x1="-0.254" y1="0.762" x2="-0.254" y2="0" width="0.254" layer="21"/>
@@ -369,7 +360,6 @@ DIN A3, landscape with extra doc field</description>
 <text x="0" y="-1.397" size="1.016" layer="27" font="vector" ratio="10" align="top-center">&gt;VALUE</text>
 </package>
 <package name="C5.0X3.2-02" urn="urn:adsk.eagle:footprint:481361/1" library_version="6">
-<description>&lt;b&gt;Capacitor&lt;/b&gt; 4.6mm x 3mm, grid 2.54mm (02)</description>
 <wire x1="1.27" y1="0" x2="0.381" y2="0" width="0.1524" layer="51"/>
 <wire x1="0.381" y1="0" x2="0.254" y2="0" width="0.1524" layer="21"/>
 <wire x1="0.254" y1="0" x2="0.254" y2="0.762" width="0.254" layer="21"/>
@@ -392,7 +382,6 @@ DIN A3, landscape with extra doc field</description>
 <text x="0" y="-1.905" size="1.016" layer="27" font="vector" ratio="10" align="top-center">&gt;VALUE</text>
 </package>
 <package name="RESISTOR_0805" urn="urn:adsk.eagle:footprint:481362/1" library_version="6">
-<description>&lt;b&gt;RESISTOR&lt;/b&gt; SMD package 0805</description>
 <wire x1="-0.41" y1="0.635" x2="0.41" y2="0.635" width="0.1524" layer="51"/>
 <wire x1="-0.41" y1="-0.635" x2="0.41" y2="-0.635" width="0.1524" layer="51"/>
 <smd name="1" x="-0.95" y="0" dx="1.3" dy="1.5" layer="1"/>
@@ -454,8 +443,6 @@ DIN A3, landscape with extra doc field</description>
 <text x="0" y="-1" size="1.016" layer="27" align="top-center">&gt;VALUE</text>
 </package>
 <package name="LED5MM" urn="urn:adsk.eagle:footprint:481374/1" library_version="6">
-<description>&lt;B&gt;LED&lt;/B&gt;&lt;p&gt;
-5 mm, round</description>
 <pad name="A" x="-1.27" y="0" drill="0.8128" shape="square"/>
 <pad name="K" x="1.27" y="0" drill="0.8128"/>
 <text x="0" y="0.9144" size="1.016" layer="25" ratio="10" align="bottom-center">&gt;NAME</text>
@@ -475,8 +462,6 @@ DIN A3, landscape with extra doc field</description>
 <circle x="0" y="0" radius="1.4732" width="0.254" layer="21"/>
 </package>
 <package name="CHIPLED_0603" urn="urn:adsk.eagle:footprint:481376/1" library_version="6">
-<description>&lt;b&gt;CHIPLED&lt;/b&gt;&lt;p&gt;
-Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <wire x1="-0.3" y1="0.825" x2="0.3" y2="0.825" width="0.1016" layer="51" curve="180" cap="flat"/>
 <wire x1="-0.275" y1="-0.825" x2="0.275" y2="-0.825" width="0.0508" layer="51" curve="-180" cap="flat"/>
 <wire x1="-0.4" y1="0.375" x2="-0.4" y2="-0.35" width="0.1016" layer="51"/>
@@ -499,8 +484,6 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <rectangle x1="-0.125" y1="0" x2="0.125" y2="0.25" layer="21"/>
 </package>
 <package name="CHIPLED_0805" urn="urn:adsk.eagle:footprint:481377/1" library_version="6">
-<description>&lt;b&gt;CHIPLED&lt;/b&gt;&lt;p&gt;
-Source: http://www.osram.convergy.de/ ... LG_R971.pdf</description>
 <wire x1="-0.35" y1="1" x2="0.35" y2="1" width="0.1016" layer="51" curve="180" cap="flat"/>
 <wire x1="-0.35" y1="-1" x2="0.35" y2="-1" width="0.1016" layer="51" curve="-180" cap="flat"/>
 <wire x1="0.575" y1="0.525" x2="0.575" y2="-0.525" width="0.1016" layer="51"/>
@@ -524,8 +507,6 @@ Source: http://www.osram.convergy.de/ ... LG_R971.pdf</description>
 <rectangle x1="-0.625" y1="0.925" x2="-0.4" y2="1" layer="51"/>
 </package>
 <package name="CHIPLED_1206" urn="urn:adsk.eagle:footprint:481373/1" library_version="6">
-<description>&lt;b&gt;CHIPLED&lt;/b&gt;&lt;p&gt;
-Source: http://www.osram.convergy.de/ ... LG_LY N971.pdf</description>
 <wire x1="-0.4" y1="1.625" x2="0.4" y2="1.625" width="0.1016" layer="51" curve="180" cap="flat"/>
 <wire x1="-0.8" y1="-0.95" x2="-0.8" y2="0.95" width="0.1016" layer="51"/>
 <wire x1="0.8" y1="0.95" x2="0.8" y2="-0.95" width="0.1016" layer="51"/>
@@ -609,26 +590,18 @@ Source: http://www.osram.convergy.de/ ... LG_LY N971.pdf</description>
 </packages>
 <packages3d>
 <package3d name="TQFP32-08" urn="urn:adsk.eagle:package:481607/2" type="model" library_version="3">
-<description>Thin Plasic Quad Flat Package Grid 0.8 mm</description>
 </package3d>
 <package3d name="CON-2X5-HARWIN-1.27" urn="urn:adsk.eagle:package:481511/2" type="model" library_version="19" library_locally_modified="yes">
-<description>AVR JTAG Connector
-Using the Harwin 1.27mm 2x5 pin header for SMD montage</description>
 </package3d>
 <package3d name="C4.5X2.5-02" urn="urn:adsk.eagle:package:481480/1" type="box" library_version="6">
-<description>Capacitor 4.6mm x 3mm, grid 2.54mm (02)</description>
 </package3d>
 <package3d name="C4.5X3-02" urn="urn:adsk.eagle:package:481481/1" type="box" library_version="6">
-<description>Capacitor 4.6mm x 3mm, grid 2.54mm (02)</description>
 </package3d>
 <package3d name="C7.0X2.4-04" urn="urn:adsk.eagle:package:481482/1" type="box" library_version="6">
-<description>Capacitor 7.0mm x 2.4mm, grid 5.08mm (04)</description>
 </package3d>
 <package3d name="C5.0X3.2-02" urn="urn:adsk.eagle:package:481483/1" type="box" library_version="6">
-<description>Capacitor 4.6mm x 3mm, grid 2.54mm (02)</description>
 </package3d>
 <package3d name="RESISTOR_0805" urn="urn:adsk.eagle:package:481484/1" type="box" library_version="6">
-<description>RESISTOR SMD package 0805</description>
 </package3d>
 <package3d name="CAPACITOR-0805-MURATA-GRM-21" urn="urn:adsk.eagle:package:481485/1" type="box" library_version="6">
 </package3d>
@@ -639,22 +612,14 @@ Using the Harwin 1.27mm 2x5 pin header for SMD montage</description>
 <package3d name="RESISTOR-0805-KOA-RK73-2A" urn="urn:adsk.eagle:package:481489/2" type="model" library_version="19" library_locally_modified="yes">
 </package3d>
 <package3d name="LED5MM" urn="urn:adsk.eagle:package:481492/1" type="box" library_version="6">
-<description>LED
-5 mm, round</description>
 </package3d>
 <package3d name="LED-HLMP-K155" urn="urn:adsk.eagle:package:481493/1" type="box" library_version="6">
 </package3d>
 <package3d name="CHIPLED_0603" urn="urn:adsk.eagle:package:481494/1" type="box" library_version="6">
-<description>CHIPLED
-Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 </package3d>
 <package3d name="CHIPLED_0805" urn="urn:adsk.eagle:package:481495/1" type="box" library_version="6">
-<description>CHIPLED
-Source: http://www.osram.convergy.de/ ... LG_R971.pdf</description>
 </package3d>
 <package3d name="CHIPLED_1206" urn="urn:adsk.eagle:package:481491/1" type="box" library_version="6">
-<description>CHIPLED
-Source: http://www.osram.convergy.de/ ... LG_LY N971.pdf</description>
 </package3d>
 <package3d name="LED-0805-SLOAN" urn="urn:adsk.eagle:package:481496/1" type="box" library_version="6">
 </package3d>
@@ -707,7 +672,6 @@ Source: http://www.osram.convergy.de/ ... LG_LY N971.pdf</description>
 <text x="0" y="-2.54" size="1.778" layer="96" align="top-center">&gt;VALUE</text>
 </symbol>
 <symbol name="CON-CORTEX-DEBUG" urn="urn:adsk.eagle:symbol:482253/1" library_version="6">
-<description>&lt;h3&gt;Context Debug Connector&lt;/h3&gt;</description>
 <pin name="VTREF" x="-17.78" y="10.16"/>
 <pin name="GND@1" x="-17.78" y="5.08"/>
 <pin name="GND@2" x="-17.78" y="0"/>
@@ -852,7 +816,6 @@ Source: http://www.osram.convergy.de/ ... LG_LY N971.pdf</description>
 </devices>
 </deviceset>
 <deviceset name="CON-CORTEX-DEBUG" urn="urn:adsk.eagle:component:482254/9" prefix="J" uservalue="yes" library_version="19" library_locally_modified="yes">
-<description>&lt;h3&gt;Cortex Debug Connector&lt;/h3&gt;</description>
 <gates>
 <gate name="G$1" symbol="CON-CORTEX-DEBUG" x="0" y="0"/>
 </gates>
@@ -1147,13 +1110,6 @@ Source: http://www.osram.convergy.de/ ... LG_LY N971.pdf</description>
 </devicesets>
 </library>
 <library name="supply1" urn="urn:adsk.eagle:library:371">
-<description>&lt;b&gt;Supply Symbols&lt;/b&gt;&lt;p&gt;
- GND, VCC, 0V, +5V, -5V, etc.&lt;p&gt;
- Please keep in mind, that these devices are necessary for the
- automatic wiring of the supply signals.&lt;p&gt;
- The pin name defined in the symbol is identical to the net which is to be wired automatically.&lt;p&gt;
- In this library the device names are the same as the pin names of the symbols, therefore the correct signal names appear next to the supply symbols in the schematic.&lt;p&gt;
- &lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;</description>
 <packages>
 </packages>
 <symbols>
@@ -1171,7 +1127,6 @@ Source: http://www.osram.convergy.de/ ... LG_LY N971.pdf</description>
 </symbols>
 <devicesets>
 <deviceset name="GND" urn="urn:adsk.eagle:component:26954/1" prefix="GND" library_version="1">
-<description>&lt;b&gt;SUPPLY SYMBOL&lt;/b&gt;</description>
 <gates>
 <gate name="1" symbol="GND" x="0" y="0"/>
 </gates>
@@ -1184,7 +1139,6 @@ Source: http://www.osram.convergy.de/ ... LG_LY N971.pdf</description>
 </devices>
 </deviceset>
 <deviceset name="VCC" urn="urn:adsk.eagle:component:26957/1" prefix="P+" library_version="1">
-<description>&lt;b&gt;SUPPLY SYMBOL&lt;/b&gt;</description>
 <gates>
 <gate name="VCC" symbol="VCC" x="0" y="0"/>
 </gates>
@@ -1267,9 +1221,9 @@ Source: http://www.osram.convergy.de/ ... LG_LY N971.pdf</description>
 <part name="J3" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" deviceset="CON-SNOWF-OUT" device="" package3d_urn="urn:adsk.eagle:package:493620/2"/>
 <part name="P+8" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="GND4" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="C4" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" deviceset="C" device="0805-MURATA-GRM-21" package3d_urn="urn:adsk.eagle:package:481485/1" value="10µF"/>
+<part name="C4" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" deviceset="C" device="0805-MURATA-GRM-21" package3d_urn="urn:adsk.eagle:package:481485/1" value="1µF"/>
 <part name="GND5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="C5" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" deviceset="C" device="0805-MURATA-GRM-21" package3d_urn="urn:adsk.eagle:package:481485/1" value="10µF"/>
+<part name="C5" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" deviceset="C" device="0805-MURATA-GRM-21" package3d_urn="urn:adsk.eagle:package:481485/1" value="1µF"/>
 <part name="GND6" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="C6" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" deviceset="C" device="0805-MURATA-GRM-21" package3d_urn="urn:adsk.eagle:package:481485/1" value="100nF"/>
 <part name="GND7" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>

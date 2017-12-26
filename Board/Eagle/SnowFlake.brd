@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="8.3.2">
+<eagle version="8.5.1">
 <drawing>
 <settings>
-<setting alwaysvectorfont="no"/>
+<setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="1" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.05" altunitdist="mm" altunit="mm"/>
@@ -3352,7 +3352,6 @@
 <library name="lucky-resistor" urn="urn:adsk.eagle:library:481313">
 <packages>
 <package name="TQFP32-08" urn="urn:adsk.eagle:footprint:481455/1" library_version="1" library_locally_modified="yes">
-<description>&lt;B&gt;Thin Plasic Quad Flat Package&lt;/B&gt; Grid 0.8 mm</description>
 <wire x1="3.505" y1="3.505" x2="3.505" y2="-3.505" width="0.1524" layer="21"/>
 <wire x1="3.505" y1="-3.505" x2="-3.505" y2="-3.505" width="0.1524" layer="21"/>
 <wire x1="-3.505" y1="-3.505" x2="-3.505" y2="3.15" width="0.1524" layer="21"/>
@@ -3427,8 +3426,6 @@
 <rectangle x1="-3.0286" y1="3.556" x2="-2.5714" y2="4.5466" layer="51"/>
 </package>
 <package name="CON-2X5-HARWIN-1.27" urn="urn:adsk.eagle:footprint:481406/1" library_version="6">
-<description>&lt;h2&gt;AVR JTAG Connector&lt;/h2&gt;
-&lt;p&gt;Using the Harwin 1.27mm 2x5 pin header for SMD montage&lt;/p&gt;</description>
 <smd name="5" x="0" y="-1.95" dx="2.4" dy="0.76" layer="1" rot="R90"/>
 <smd name="3" x="-1.27" y="-1.95" dx="2.4" dy="0.76" layer="1" rot="R90"/>
 <smd name="1" x="-2.54" y="-1.95" dx="2.4" dy="0.76" layer="1" rot="R90"/>
@@ -4446,18 +4443,12 @@
 </packages>
 <packages3d>
 <package3d name="TQFP32-08" urn="urn:adsk.eagle:package:481607/2" type="model" library_version="3">
-<description>Thin Plasic Quad Flat Package Grid 0.8 mm</description>
 </package3d>
 <package3d name="CON-2X5-HARWIN-1.27" urn="urn:adsk.eagle:package:481511/2" type="model" library_version="19" library_locally_modified="yes">
-<description>AVR JTAG Connector
-Using the Harwin 1.27mm 2x5 pin header for SMD montage</description>
 </package3d>
 <package3d name="RESISTOR_0805" urn="urn:adsk.eagle:package:481484/1" type="box" library_version="6">
-<description>RESISTOR SMD package 0805</description>
 </package3d>
 <package3d name="CHIPLED_0603" urn="urn:adsk.eagle:package:481494/1" type="box" library_version="6">
-<description>CHIPLED
-Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 </package3d>
 <package3d name="LED-0402-ROHM" urn="urn:adsk.eagle:package:491305/3" type="model" library_version="9">
 </package3d>
@@ -4588,10 +4579,11 @@ Your Eurocircuits Team
 <param name="slThermalsForVias" value="0"/>
 <param name="dpMaxLengthDifference" value="10mm"/>
 <param name="dpGapFactor" value="2.5"/>
-<param name="checkGrid" value="0"/>
 <param name="checkAngle" value="0"/>
 <param name="checkFont" value="1"/>
 <param name="checkRestrict" value="1"/>
+<param name="checkStop" value="0"/>
+<param name="checkValues" value="0"/>
 <param name="useDiameter" value="13"/>
 <param name="maxErrors" value="50"/>
 </designrules>
@@ -4845,11 +4837,11 @@ Your Eurocircuits Team
 </element>
 <element name="J2" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" package="CON-PADS-3XWIRE-B" package3d_urn="urn:adsk.eagle:package:493621/2" value="CON-SNOWF-IN" x="40" y="72.75" rot="MR0"/>
 <element name="J3" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" package="CON-PADS-3XWIRE-T" package3d_urn="urn:adsk.eagle:package:493620/2" value="CON-SNOWF-OUT" x="40" y="7.55" rot="MR0"/>
-<element name="C4" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" package="CAPACITOR-0805-MURATA-GRM-21" package3d_urn="urn:adsk.eagle:package:481485/1" value="10µF" x="24" y="52" smashed="yes" rot="MR0">
+<element name="C4" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" package="CAPACITOR-0805-MURATA-GRM-21" package3d_urn="urn:adsk.eagle:package:481485/1" value="1µF" x="24" y="52" smashed="yes" rot="MR0">
 <attribute name="NAME" x="23.5" y="49.65" size="1.016" layer="26" rot="MR0" align="bottom-center"/>
 <attribute name="VALUE" x="24" y="51" size="1.016" layer="28" rot="MR0" align="top-center"/>
 </element>
-<element name="C5" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" package="CAPACITOR-0805-MURATA-GRM-21" package3d_urn="urn:adsk.eagle:package:481485/1" value="10µF" x="56" y="29" smashed="yes" rot="MR180">
+<element name="C5" library="lucky-resistor" library_urn="urn:adsk.eagle:library:481313" package="CAPACITOR-0805-MURATA-GRM-21" package3d_urn="urn:adsk.eagle:package:481485/1" value="1µF" x="56" y="29" smashed="yes" rot="MR180">
 <attribute name="NAME" x="56" y="27.7" size="1.016" layer="26" rot="MR180" align="bottom-center"/>
 <attribute name="VALUE" x="56" y="30" size="1.016" layer="28" rot="MR180" align="top-center"/>
 </element>
