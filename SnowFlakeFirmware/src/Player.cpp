@@ -35,7 +35,7 @@ namespace Player {
 /// A structure which combined the scene data with the scene itself.
 ///
 struct Slot {
-	uint32_t frame; ///< The current frame for this slot.
+	FrameIndex frame; ///< The current frame for this slot.
 	SceneData data; ///< The scene data.
 	Scene scene; ///< The scene itself.
 };
@@ -54,18 +54,18 @@ State gState = State::SingleScene;
 
 /// The frame counter for blending scenes.
 ///
-uint32_t gBlendCurrentFrame = 0;
+FrameIndex gBlendCurrentFrame = 0;
 
 /// The number of frames used for the blend.
 ///
-uint32_t gBlendLastFrame = 0;
+FrameIndex gBlendLastFrame = 0;
 
 
 void initialize()
 {
 	gSlotA.frame = 0;
 	gSlotA.scene = SceneManager::getScene(Scene::Black);
-	gSlotA.scene.init(&gSlotA.data);
+	gSlotA.scene.init(&gSlotA.data, 0);
 	gSlotB.frame = 0;
 }
 
@@ -120,22 +120,22 @@ void animate()
 }
 
 
-void displayScene(Scene::Name sceneName)
+void displayScene(Scene::Name sceneName, uint8_t entropy)
 {
 	gSlotA.frame = 0;
 	gSlotA.data.clear();
 	gSlotA.scene = SceneManager::getScene(sceneName);
-	gSlotA.scene.init(&gSlotA.data);
+	gSlotA.scene.init(&gSlotA.data, entropy);
 	gState = State::SingleScene;
 }
 
 
-void blendToScene(Scene::Name sceneName, uint32_t durationFrames)
+void blendToScene(Scene::Name sceneName, uint8_t entropy, FrameIndex durationFrames)
 {
 	gSlotB.frame = 0;
 	gSlotB.data.clear();
 	gSlotB.scene = SceneManager::getScene(sceneName);
-	gSlotB.scene.init(&gSlotB.data);
+	gSlotB.scene.init(&gSlotB.data, entropy);
 	gBlendCurrentFrame = 0;
 	gBlendLastFrame = durationFrames;
 	gState = State::Blend;

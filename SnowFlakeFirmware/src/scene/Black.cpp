@@ -25,7 +25,7 @@ namespace scene {
 namespace Black {
 
 
-void initialize(SceneData*)
+void initialize(SceneData*, uint8_t)
 {
 	// empty
 }

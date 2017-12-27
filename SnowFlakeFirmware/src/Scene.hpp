@@ -38,6 +38,7 @@ public:
 		Black,
 		IceSparkle,
 		SkyWithStars,
+		Waves,
 		SimpleShift,
 		SimpleRotation,
 		SimpleDiagonal,
@@ -49,7 +50,7 @@ public:
 public:
 	/// Function pointer to the initialization function.
 	///
-	typedef void(*InitFn)(SceneData*);
+	typedef void(*InitFn)(SceneData*, uint8_t entropy);
 	
 	/// Function pointer to the `getFrame` function.
 	///
@@ -68,7 +69,7 @@ public:
 	/// @param initSceneFn The function to initialize the scene data.
 	/// @param getFrameFn The function to get a new frame for the scene.
 	///
-	Scene(uint32_t frameCount, InitFn initFn, GetFrameFn getFrameFn);
+	Scene(FrameIndex frameCount, InitFn initFn, GetFrameFn getFrameFn);
 	
 	/// Copy constructor
 	///
@@ -81,18 +82,18 @@ public:
 public:
 	/// Get the frame count.
 	///
-	inline uint32_t getFrameCount() const { return _frameCount; }
+	inline FrameIndex getFrameCount() const { return _frameCount; }
 
 	/// Initialize the given scene data.
 	///
-	void init(SceneData *data);
+	void init(SceneData *data, uint8_t entropy);
 	
 	/// Get a frame for this scene.
 	///
 	Frame getFrame(SceneData *data, FrameIndex frameIndex);
 	
 private:
-	uint32_t _frameCount; ///< The frame count for this scene.
+	FrameIndex _frameCount; ///< The frame count for this scene.
 	InitFn _initFn; ///< The function to initialize the scene data.
 	GetFrameFn _getFrameFn; ///< The function to get a new frame for this scene.
 };

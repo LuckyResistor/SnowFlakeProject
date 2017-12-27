@@ -70,7 +70,7 @@ const InterpolatingArray<cSparkleValuesCount> cSparkleValuesInterpolation(ValueA
 const RandomFrameCounters<1600, 2400, Display::cLedCount> gSparkleFrameCounters;
 
 
-void initialize(SceneData *data)
+void initialize(SceneData *data, uint8_t)
 {
 	gStarFrameCounters.initialize(data);
 }

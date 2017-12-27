@@ -68,12 +68,15 @@ enum class State {
 const Scene::Name cScenesOnDisplay[] = {
 	Scene::SkyWithStars,
 	Scene::IceSparkle,
-	Scene::SimpleRandomFlicker,
-	Scene::SimpleRandomParticle,
-	Scene::SimpleRotation,
-	Scene::SimpleDiagonal,
-	Scene::SimpleShift,
-	Scene::SimpleFlash,
+	Scene::Waves,
+	
+	//Ignore the simple scenes for production release.
+	//Scene::SimpleRandomFlicker,
+	//Scene::SimpleRandomParticle,
+	//Scene::SimpleRotation,
+	//Scene::SimpleDiagonal,
+	//Scene::SimpleShift,
+	//Scene::SimpleFlash,
 };
 
 /// The number of scenes to display.
@@ -89,14 +92,31 @@ const uint32_t cBlendDuration = 80;
 const uint32_t cSceneDuration = 30000;
 
 
+/// The mask for a command.
+///
+const uint32_t cCmdMask = 0xffff0000ul;
+
 /// The mask for the "next scene" command.
 ///
-const uint32_t cCmdNextScene = 0xa5140000;
+const uint32_t cCmdNextScene = 0xa5140000ul;
+
+/// The mask for the scene index portion.
+///
+const uint32_t cCmdNextScene_SceneMask = 0x000000fful;
+
+/// The mask for the scene entropy portion.
+///
+const uint32_t cCmdNextScene_EntropyMask = 0x0000ff00ul;
 
 
 /// The index of the next scene to display.
 ///
 volatile uint8_t gNextSceneIndex = 0;
+
+/// The entropy for the next scene to display.
+///
+volatile uint8_t gNextSceneEntropy = 0;
+
 
 /// The state of the application.
 ///
@@ -168,17 +188,18 @@ void masterInitialize()
 {
 	// Decide about the first scene to display.
 	gNextSceneIndex = Helper::getRandom8(0, cScenesOnDisplayCount-1);
+	gNextSceneEntropy = Helper::getRandom8(0, 0xff);
 		
 	// Send the scene number to all other boards.
 	Helper::delayMs(50);
-	Communication::sendData(cCmdNextScene + static_cast<uint8_t>(gNextSceneIndex));
+	Communication::sendData(cCmdNextScene | static_cast<uint32_t>(gNextSceneIndex) | (static_cast<uint32_t>(gNextSceneEntropy) << 8));
 	Communication::waitUntilReadyToSend();
 	Helper::delayMs(50); // Wait until all boards are ready.
 	Communication::sendSynchronization();
 			
 	// Blend to the first scene from black.
-	Player::displayScene(Scene::Black);
-	Player::blendToScene(cScenesOnDisplay[gNextSceneIndex], cBlendDuration);
+	Player::displayScene(Scene::Black, 0);
+	Player::blendToScene(cScenesOnDisplay[gNextSceneIndex], gNextSceneEntropy, cBlendDuration);
 	gSceneElapsedTime.start();
 	while (Player::getState() == Player::State::Blend) {
 		Player::animate();
@@ -190,7 +211,7 @@ void masterInitialize()
 ///
 void slaveInitialize()
 {
-	Player::displayScene(Scene::Black);
+	Player::displayScene(Scene::Black, 0);
 }
 
 
@@ -241,17 +262,18 @@ void masterLoop()
 		// Check if its time to think about the next scene
 		if (gState == State::Play && gSceneElapsedTime.elapsedTime() > (cSceneDuration - 50)) {
 			auto nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
-			while (nextScene == gNextSceneIndex) {
+			while (nextScene == gNextSceneIndex && cScenesOnDisplayCount != 1) {
 				nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
 			}
 			gNextSceneIndex = nextScene;
-			Communication::sendData(cCmdNextScene + gNextSceneIndex);			
+			gNextSceneEntropy = Helper::getRandom8(0, 0xff);
+			Communication::sendData(cCmdNextScene | static_cast<uint32_t>(gNextSceneIndex) | (static_cast<uint32_t>(gNextSceneEntropy) << 8));
 			gState = State::SendSynchronization;
 		} else if (gState == State::SendSynchronization && gSceneElapsedTime.elapsedTime() >= cSceneDuration) {
 			Communication::sendSynchronization();
 			gState = State::BlendScene;
 		} else if (gState == State::BlendScene && Communication::isReadyToSend()) {
-			Player::blendToScene(cScenesOnDisplay[gNextSceneIndex], cBlendDuration);
+			Player::blendToScene(cScenesOnDisplay[gNextSceneIndex], gNextSceneEntropy, cBlendDuration);
 			gState = State::Play;
 			gSceneElapsedTime.start();			
 		}
@@ -264,8 +286,9 @@ void masterLoop()
 void onDataReceived(uint32_t value)
 {
 	// Check incoming commands.
-	if ((value & 0xffff0000UL) == cCmdNextScene) {
-		gNextSceneIndex = (value & 0x000000ffUL);
+	if ((value & cCmdMask) == cCmdNextScene) {
+		gNextSceneIndex = static_cast<uint8_t>(value & cCmdNextScene_SceneMask);
+		gNextSceneEntropy = static_cast<uint8_t>((value & cCmdNextScene_EntropyMask) >> 8);
 	}
 }
 
@@ -288,7 +311,7 @@ void slaveLoop()
 		Player::animate();
 		// Act on application states
 		if (gState == State::BlendScene) {
-			Player::blendToScene(cScenesOnDisplay[gNextSceneIndex], cBlendDuration);
+			Player::blendToScene(cScenesOnDisplay[gNextSceneIndex], gNextSceneEntropy, cBlendDuration);
 			gState = State::Play;			
 		}
 	}

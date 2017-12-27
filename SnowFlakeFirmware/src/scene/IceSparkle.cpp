@@ -80,7 +80,7 @@ const Fixed16 cBaseAnimation[] = {
 const InterpolatingArray<sizeof(cBaseAnimation)/sizeof(Fixed16)> cBaseAnimationInterpolation(cBaseAnimation);
 
 
-void initialize(SceneData *data)
+void initialize(SceneData *data, uint8_t)
 {
 	gBaseFrameCounters.initialize(data);
 }

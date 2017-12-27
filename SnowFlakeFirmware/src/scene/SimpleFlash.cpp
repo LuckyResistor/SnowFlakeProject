@@ -25,7 +25,7 @@ namespace scene {
 namespace SimpleFlash {
 
 
-void initialize(SceneData*)
+void initialize(SceneData*, uint8_t)
 {
 	// empty
 }

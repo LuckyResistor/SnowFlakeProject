@@ -25,7 +25,7 @@
 
 
 namespace {
-void emptyInitScene(SceneData*)
+void emptyInitScene(SceneData*, uint8_t)
 {
 	// empty
 }	
@@ -42,7 +42,7 @@ Scene::Scene()
 }
 
 
-Scene::Scene(uint32_t frameCount, InitFn initFn, GetFrameFn getFrameFn)
+Scene::Scene(FrameIndex frameCount, InitFn initFn, GetFrameFn getFrameFn)
 	: _frameCount(frameCount), _initFn(initFn), _getFrameFn(getFrameFn)
 {
 }
@@ -63,9 +63,9 @@ const Scene& Scene::operator=(const Scene &assign)
 }
 
 
-void Scene::init(SceneData *data)
+void Scene::init(SceneData *data, uint8_t entropy)
 {
-	(*_initFn)(data);
+	(*_initFn)(data, entropy);
 }
 
 

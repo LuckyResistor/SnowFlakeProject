@@ -34,11 +34,11 @@ namespace IceSparkle {
 
 /// The number of frames for this scene
 ///
-const uint32_t cFrameCount = 300;
+const FrameIndex cFrameCount = 300;
 
 /// The function to initialize this scene.
 ///
-void initialize(SceneData *data);
+void initialize(SceneData *data, uint8_t entropy);
 
 /// The function to get a frame from this scene.
 ///

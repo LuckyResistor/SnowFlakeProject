@@ -18,44 +18,47 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "SimpleRandomParticle.hpp"
+#include "Waves.hpp"
 
 
 #include "../InterpolatingArray.hpp"
-#include "../RandomFrameCounters.hpp"
+#include "../LedMaps.hpp"
+#include "../ShiftingMap.hpp"
 
 
 namespace scene {
-namespace SimpleRandomParticle {
+namespace Waves {
 
 
-/// Create a random frame counter to show the particles.
+/// The bars array with the ramp for the effect.
 ///
-const RandomFrameCounters<200, 400> gRandomFrameCounters;
-
-/// The animation for a single particle..
-///
-const Fixed16 cAnimation[] = {
-	Fixed16(0.2f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(1.0f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.5f),
-	Fixed16(0.5f), Fixed16(0.3f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.9f), Fixed16(0.5f), Fixed16(0.5f),
-	Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.5f), Fixed16(0.3f), Fixed16(0.5f), Fixed16(0.3f), Fixed16(0.5f), Fixed16(0.5f),
+const Fixed16 cWave[] = {
+	Fixed16(1.0f), Fixed16(0.3f), Fixed16(0.0f), Fixed16(0.3f)
 };
 
+/// The number of elements in the bars array.
+///
+const uint8_t cWaveCount = sizeof(cWave)/sizeof(Fixed16);
+	
 /// The interpolating array.
 ///
-const InterpolatingArray<sizeof(cAnimation)/sizeof(Fixed16)> cAnimationInterpolation(cAnimation);
+const InterpolatingArray<cWaveCount> cWaveInterpolation(cWave);
+
+/// The shifting map with a simple diagonal pattern.
+///
+const ShiftingMap<0> cDiagonalShiftingMap(LedMaps::cDiagonal, Fixed16(1.2f));
 
 
-void initialize(SceneData *data, uint8_t)
+void initialize(SceneData *sceneData, uint8_t entropy)
 {
-	gRandomFrameCounters.initialize(data);
+	cDiagonalShiftingMap.initialize(sceneData, (entropy/43));
 }
 
 
-Frame getFrame(SceneData *data, FrameIndex)
+Frame getFrame(SceneData *sceneData, FrameIndex frameIndex)
 {
-	return gRandomFrameCounters.getFrame(data, [](Fixed16 x)->PixelValue{
-		return cAnimationInterpolation.getSmoothValueAt(x);
+	return Frame([=](uint8_t pixelIndex)->PixelValue{
+		return cWaveInterpolation.getSmoothValueAt(cDiagonalShiftingMap.getPositionWrapped(sceneData, pixelIndex, cFrameCount, frameIndex));
 	});
 }
 

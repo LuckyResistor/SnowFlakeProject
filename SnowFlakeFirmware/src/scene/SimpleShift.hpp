@@ -34,11 +34,11 @@ namespace SimpleShift {
 
 /// The number of frames for this scene
 ///
-const uint32_t cFrameCount = 150;
+const FrameIndex cFrameCount = 150;
 
 /// The function to initialize this scene.
 ///
-void initialize(SceneData *data);
+void initialize(SceneData *data, uint8_t entropy);
 
 /// The function to get a frame from this scene.
 ///

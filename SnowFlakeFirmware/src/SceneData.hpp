@@ -52,6 +52,7 @@ public:
 		uint16_t int16[cSize*2]; ///< Or alternatively store 16bit integer data.
 		uint8_t int8[cSize*4]; ///< Or alternatively store 8bit integer data.
 	};
+	
 };
 
 

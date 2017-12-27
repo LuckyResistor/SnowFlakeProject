@@ -24,17 +24,17 @@
 #include "../Scene.hpp"
 
 
-/// \namespace scene::SimpleRotation
-/// A simple rotating scene.
+/// \namespace scene::Waves
+/// Slow waves in six random directions.
 
 
 namespace scene {
-namespace SimpleRotation {
+namespace Waves {
 
 
 /// The number of frames for this scene
 ///
-const FrameIndex cFrameCount = 200;
+const FrameIndex cFrameCount = 150;
 
 /// The function to initialize this scene.
 ///

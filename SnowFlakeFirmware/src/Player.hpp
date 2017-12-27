@@ -55,15 +55,17 @@ void animate();
 /// This will immediately switch to the given scene.
 ///
 /// @param sceneName The name of the new scene to display.
+/// @param entropy A random entropy element for the scene.
 ///
-void displayScene(Scene::Name sceneName);
+void displayScene(Scene::Name sceneName, uint8_t entropy);
 
 /// Blend to another scene smoothly.
 ///
 /// @param sceneName The name of the new scene to display.
+/// @param entropy A random entropy element for the scene.
 /// @param durationFrames The duration of the blend in frames. Has to be > 0.
 ///
-void blendToScene(Scene::Name sceneName, uint32_t durationFrames);
+void blendToScene(Scene::Name sceneName, uint8_t entropy, FrameIndex durationFrames);
 
 /// Get the current state of the player.
 ///

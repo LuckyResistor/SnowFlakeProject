@@ -30,6 +30,7 @@
 #include "scene/SimpleRandomFlicker.hpp"
 #include "scene/IceSparkle.hpp"
 #include "scene/SkyWithStars.hpp"
+#include "scene/Waves.hpp"
 
 
 namespace SceneManager {
@@ -39,7 +40,7 @@ namespace SceneManager {
 ///
 typedef struct {
 	const Scene::Name name; ///< The name for this scene.
-	const uint32_t frameCount; ///< The frame count for this scene.
+	const FrameIndex frameCount; ///< The frame count for this scene.
 	const Scene::InitFn initFn; ///< The function to initialize the scene data.
 	const Scene::GetFrameFn getFrameFn; ///< The function to get a new frame for this scene.
 } SceneEntry;
@@ -62,6 +63,7 @@ const SceneEntry cScenes[] __aligned(4) = {
 	LR_SCENE_ENTRY(SimpleRandomFlicker),
 	LR_SCENE_ENTRY(IceSparkle),
 	LR_SCENE_ENTRY(SkyWithStars),
+	LR_SCENE_ENTRY(Waves),
 	{Scene::Black, 0, nullptr, nullptr} // The end mark.
 };
 

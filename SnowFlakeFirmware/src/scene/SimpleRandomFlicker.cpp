@@ -39,7 +39,7 @@ const RandomFrameCounters<10, 512> gRandomFrameCounters;
 const InterpolatingArray<sizeof(ValueArrays::cRandom)/sizeof(Fixed16)> cAnimationInterpolation(ValueArrays::cRandom);
 
 
-void initialize(SceneData *data)
+void initialize(SceneData *data, uint8_t)
 {
 	gRandomFrameCounters.initialize(data);
 }

@@ -39,4 +39,9 @@ extern const Fixed16 cClockwise[Display::cLedCount];
 extern const Fixed16 cDiagonal[Display::cLedCount];
 
 
+/// An index array map to fully rotate the maps.
+///
+extern const uint8_t cIndexRotation[6][Display::cLedCount];
+
+
 }

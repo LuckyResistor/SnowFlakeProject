@@ -45,7 +45,7 @@ const uint8_t cBarsElementCount = sizeof(cBars)/sizeof(Fixed16);
 const InterpolatingArray<cBarsElementCount> cBarsInterpolation(cBars);
 
 
-void initialize(SceneData*)
+void initialize(SceneData*, uint8_t)
 {
 	// empty
 }
