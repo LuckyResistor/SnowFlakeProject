@@ -69,6 +69,7 @@ const Scene::Name cScenesOnDisplay[] = {
 	Scene::SkyWithStars,
 	Scene::IceSparkle,
 	Scene::Waves,
+	Scene::Circles,
 	
 	//Ignore the simple scenes for production release.
 	//Scene::SimpleRandomFlicker,
@@ -89,7 +90,7 @@ const uint32_t cBlendDuration = 80;
 
 /// Duration how long a scene is shown in milliseconds.
 ///
-const uint32_t cSceneDuration = 30000;
+const uint32_t cSceneDuration = 60000;
 
 
 /// The mask for a command.

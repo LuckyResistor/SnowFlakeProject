@@ -31,6 +31,7 @@
 #include "scene/IceSparkle.hpp"
 #include "scene/SkyWithStars.hpp"
 #include "scene/Waves.hpp"
+#include "scene/Circles.hpp"
 
 
 namespace SceneManager {
@@ -64,6 +65,7 @@ const SceneEntry cScenes[] __aligned(4) = {
 	LR_SCENE_ENTRY(IceSparkle),
 	LR_SCENE_ENTRY(SkyWithStars),
 	LR_SCENE_ENTRY(Waves),
+	LR_SCENE_ENTRY(Circles),	
 	{Scene::Black, 0, nullptr, nullptr} // The end mark.
 };
 

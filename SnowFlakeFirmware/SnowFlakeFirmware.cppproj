@@ -333,6 +333,12 @@
     <Compile Include="src\scene\Black.hpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\scene\Circles.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\scene\Circles.hpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\scene\IceSparkle.cpp">
       <SubType>compile</SubType>
     </Compile>

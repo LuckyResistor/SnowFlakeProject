@@ -46,7 +46,7 @@ In this error cases, the snow flake will flag the error internally. The firmware
 ## Regular Communication
 The regular communication consist of 32bit values sent from the master to all clients. Currently there is a single command implemented:
 
-Blend scene: `0xAB0000XX` - XX is the new scene number.
+Blend scene: `0xA514YYXX` - XX is the new scene number, YY the entropy value for the new scene.
 
 This command is sent before all snow flakes shall blend to a new scene. A synchronisation signal is sent after this command, which will trigger the actual blend of the scene.
 

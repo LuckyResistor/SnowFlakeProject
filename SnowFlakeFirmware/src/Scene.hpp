@@ -39,6 +39,7 @@ public:
 		IceSparkle,
 		SkyWithStars,
 		Waves,
+		Circles,
 		SimpleShift,
 		SimpleRotation,
 		SimpleDiagonal,

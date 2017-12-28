@@ -18,7 +18,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "Waves.hpp"
+#include "Circles.hpp"
 
 
 #include "../InterpolatingArray.hpp"
@@ -29,13 +29,26 @@
 
 
 namespace scene {
-namespace Waves {
+namespace Circles {
 
 
 /// The bars array with the ramp for the effect.
 ///
 const Fixed16 cWave[] = {
-	Fixed16(1.0f), Fixed16(0.2f), Fixed16(0.0f), Fixed16(0.2f)
+	Fixed16(0.8f), Fixed16(0.8f), Fixed16(0.8f), Fixed16(0.1f), Fixed16(0.1f), Fixed16(0.1f)
+};
+
+/// The different range values.
+///
+const Fixed16 cRanges[] = {
+	Fixed16(0.75f),
+	Fixed16(0.8f),
+	Fixed16(0.9f),
+	Fixed16(1.1f),
+	Fixed16(1.2f),
+	Fixed16(3.7f),
+	Fixed16(5.7f),
+	Fixed16(13.3f),
 };
 
 /// The number of elements in the bars array.
@@ -48,7 +61,7 @@ const InterpolatingArray<cWaveCount> cWaveInterpolation(cWave);
 
 /// The shifting map with a simple diagonal pattern.
 ///
-const ShiftingMap<0> cDiagonalShiftingMap(LedMaps::cDiagonal);
+const ShiftingMap<0> cCircularShiftingMap(LedMaps::cCircular);
 
 /// The number of elements in the sparkle values array
 ///
@@ -63,10 +76,16 @@ const InterpolatingArray<cSparkleValuesCount> cSparkleValuesInterpolation(ValueA
 const RandomFrameCounters<100, 2500, 2> gSparkleFrameCounters;
 
 
+Fixed16 getRangeFromEntropy(const uint8_t entropy)
+{
+	return cRanges[entropy&7];
+}
+
+
 void initialize(SceneData *sceneData, uint8_t entropy)
 {
-	// Initialize the shifting map with a random direction from the given entropy value.
-	cDiagonalShiftingMap.initialize(sceneData, (entropy/43), Fixed16(1.2f));
+	// Initialize the shifting map no rotation but a random range value.
+	cCircularShiftingMap.initialize(sceneData, 0, getRangeFromEntropy(entropy));
 }
 
 
@@ -77,11 +96,10 @@ Frame getFrame(SceneData *sceneData, FrameIndex frameIndex)
 		// Create relative value between 0.7 and 1.0 for later multiplication.
 		return cSparkleValuesInterpolation.getHardValueAt(x) * Fixed16(0.3f) + Fixed16(0.7f);
 	});
-	// Create the frame with the wave animation.
+	// Create the frame with the circles
 	Frame waveFrame([=](uint8_t pixelIndex)->PixelValue{		
-		return cWaveInterpolation.getSmoothValueAt(cDiagonalShiftingMap.getPositionWrapped(sceneData, pixelIndex, cFrameCount, frameIndex));
+		return cWaveInterpolation.getSmoothValueAt(cCircularShiftingMap.getPositionWrapped(sceneData, pixelIndex, cFrameCount, frameIndex));
 	});
-	// Combine the two.
 	waveFrame.multipleWith(sparkleValueFrame);
 	return waveFrame;
 }

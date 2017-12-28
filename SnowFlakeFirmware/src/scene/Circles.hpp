@@ -21,31 +21,30 @@
 #pragma once
 
 
-#include "Fixed16.hpp"
-#include "Display.hpp"
+#include "../Scene.hpp"
 
 
-/// Shared LED Maps
+/// \namespace scene::Circles
+/// Circular animations with random variations.
+
+
+namespace scene {
+namespace Circles {
+
+
+/// The number of frames for this scene
 ///
-namespace LedMaps {
+const FrameIndex cFrameCount = 200;
 
-
-/// A map to for a clockwise motion.
+/// The function to initialize this scene.
 ///
-extern const Fixed16 cClockwise[Display::cLedCount];
+void initialize(SceneData *data, uint8_t entropy);
 
-/// A map for a motion from top left to bottom right.
+/// The function to get a frame from this scene.
 ///
-extern const Fixed16 cDiagonal[Display::cLedCount];
-
-/// A map for circular motion.
-///
-extern const Fixed16 cCircular[Display::cLedCount];
-
-
-/// An index array map to fully rotate the maps.
-///
-extern const uint8_t cIndexRotation[6][Display::cLedCount];
+Frame getFrame(SceneData *data, FrameIndex frameIndex);
 
 
 }
+}
+

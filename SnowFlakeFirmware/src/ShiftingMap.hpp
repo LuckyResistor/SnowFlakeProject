@@ -26,10 +26,10 @@
 
 /// This helper class contains the calculations for a LED map with a random rotation.
 ///
-/// The template parameter `rotationSceneDataIndex` contains the index in the int8 array
-/// of the scene data where the current rotation for the scene is stored.
+/// @tparam dataOffset The offset the the scene data where to store the rotation and
+///   range data. This class uses two entries in the scene data.
 ///
-template<uint8_t rotationSceneDataIndex>
+template<uint16_t dataOffset = 0>
 class ShiftingMap
 {
 	public:
@@ -39,20 +39,33 @@ class ShiftingMap
 	/// @param range The range for the displayed values on the map.
 	/// @param rotationSceneDataIndex The index in the scene data int8 array where to store the rotation value.
 	///
-	constexpr ShiftingMap(const Fixed16* const ledMap, const Fixed16 range)
-	: _ledMap(ledMap), _range(range)
+	constexpr ShiftingMap(const Fixed16* const ledMap)
+		: _ledMap(ledMap)
 	{
 	}
 
 public:
+	/// Get the offset in the `int8` array of the scene data for the rotation.
+	///
+	inline uint16_t getRotationInt8Offset() const {
+		return (dataOffset+1)*4;
+	}
+	
+	/// Get the offset in the `fixed16` array for the range value.
+	///
+	inline uint16_t getRangeOffset() const {
+		return dataOffset;
+	}
+	
 	/// Initialize the scene data for the shifting map.
 	///
-	void initialize(SceneData *sceneData, uint8_t rotation) const {
+	void initialize(SceneData *sceneData, uint8_t rotation, const Fixed16 range) const {
 		rotation &= 0x7;
 		if (rotation > 5) {
 			rotation -= 6;
 		}
-		sceneData->int8[rotationSceneDataIndex] = rotation;
+		sceneData->int8[getRotationInt8Offset()] = rotation;
+		sceneData->fixed16[getRangeOffset()] = range;
 	}
 
 	/// Get the wrapped position for a given frame.
@@ -60,15 +73,15 @@ public:
 	PixelValue getPositionWrapped(SceneData *sceneData, uint8_t pixelIndex, FrameIndex frameCount, FrameIndex frameIndex) const
 	{
 		const auto normal = PixelValue::normalFromRange<FrameIndex>(0, frameCount, frameIndex);
-		const auto rotation = sceneData->int8[rotationSceneDataIndex];
+		const auto rotation = sceneData->int8[getRotationInt8Offset()];
 		const auto pixelIndexAfterRotation = LedMaps::cIndexRotation[rotation][pixelIndex];
-		const auto mapShift = (_ledMap[pixelIndexAfterRotation] * _range);
+		const auto range = sceneData->fixed16[getRangeOffset()];
+		const auto mapShift = (_ledMap[pixelIndexAfterRotation] * range);
 		const auto result = PixelValue(normal - mapShift);
 		return result.wrapped();
 	}
 	
-	private:
+private:
 	const Fixed16* const _ledMap;
-	const Fixed16 _range;
 };
 

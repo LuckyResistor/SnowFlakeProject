@@ -34,7 +34,7 @@ namespace Waves {
 
 /// The number of frames for this scene
 ///
-const FrameIndex cFrameCount = 150;
+const FrameIndex cFrameCount = 200;
 
 /// The function to initialize this scene.
 ///

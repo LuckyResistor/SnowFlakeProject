@@ -26,6 +26,7 @@
 #include "../InterpolatingArray.hpp"
 #include "../RandomFrameCounters.hpp"
 #include "../ValueArrays.hpp"
+#include "../ShiftingMap.hpp"
 
 
 namespace scene {
@@ -62,11 +63,11 @@ const InterpolatingArray<cSparkleValuesCount> cSparkleValuesInterpolation(ValueA
 
 /// Create a random frame counter for a the sparkle
 ///
-const RandomFrameCounters<40, 512, Display::cLedCount> gSparkleFrameCounters;
+const RandomFrameCounters<40, 512, Display::cLedCount+2> gSparkleFrameCounters;
 
 /// Create a random frame counter for a smooth base animation
 ///
-const RandomFrameCounters<400, 600, 0> gBaseFrameCounters;
+const RandomFrameCounters<400, 600, 2> gBaseFrameCounters;
 
 /// The base animation for the particles.
 ///
@@ -79,10 +80,18 @@ const Fixed16 cBaseAnimation[] = {
 ///
 const InterpolatingArray<sizeof(cBaseAnimation)/sizeof(Fixed16)> cBaseAnimationInterpolation(cBaseAnimation);
 
+/// The shifting map for the sparkle.
+///
+const ShiftingMap<0> gDiagonalShiftingMap(LedMaps::cDiagonal);
 
-void initialize(SceneData *data, uint8_t)
+
+
+void initialize(SceneData *data, uint8_t entropy)
 {
+	// Initialize the frame counters.
 	gBaseFrameCounters.initialize(data);
+	// Initialize the shifting map with a random direction from the given entropy value.
+	gDiagonalShiftingMap.initialize(data, (entropy/43), Fixed16(0.1f));
 }
 
 
@@ -99,8 +108,7 @@ Frame getFrame(SceneData *data, FrameIndex frameIndex)
 	});
 	// Create a frame with the sparkle ramp and multiple the value frame with it.
 	sparkleValueFrame.multipleWith(Frame([=](uint8_t pixelIndex)->PixelValue{
-		const auto position = PixelValue(PixelValue::normalFromRange<uint32_t>(0, cFrameCount, frameIndex) - (LedMaps::cDiagonal[pixelIndex] * Fixed16(0.1f)));
-		return cSparkleRampInterpolation.getSmoothValueAt(position.wrapped());
+		return cSparkleRampInterpolation.getSmoothValueAt(gDiagonalShiftingMap.getPositionWrapped(data, pixelIndex, cFrameCount, frameIndex));
 	}));
 	// Add the sparkle to the base animation with limits.
 	resultFrame.addWithLimit(sparkleValueFrame);

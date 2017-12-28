@@ -70,6 +70,29 @@ const Fixed16 cDiagonal[Display::cLedCount] = {
 };
 
 
+const Fixed16 cCircular[Display::cLedCount] = {
+	Fixed16( 3.0f * (1.0f/4.0f)), // LED 00
+	Fixed16( 3.0f * (1.0f/4.0f)), // LED 01
+	Fixed16( 3.0f * (1.0f/4.0f)), // LED 02
+	Fixed16( 3.0f * (1.0f/4.0f)), // LED 03
+	Fixed16( 3.0f * (1.0f/4.0f)), // LED 04
+	Fixed16( 3.0f * (1.0f/4.0f)), // LED 05
+	Fixed16( 2.0f * (1.0f/4.0f)), // LED 06
+	Fixed16( 2.0f * (1.0f/4.0f)), // LED 07
+	Fixed16( 2.0f * (1.0f/4.0f)), // LED 08
+	Fixed16( 2.0f * (1.0f/4.0f)), // LED 09
+	Fixed16( 2.0f * (1.0f/4.0f)), // LED 10
+	Fixed16( 2.0f * (1.0f/4.0f)), // LED 11
+	Fixed16( 1.0f * (1.0f/4.0f)), // LED 12
+	Fixed16( 1.0f * (1.0f/4.0f)), // LED 13
+	Fixed16( 1.0f * (1.0f/4.0f)), // LED 14
+	Fixed16( 1.0f * (1.0f/4.0f)), // LED 15
+	Fixed16( 1.0f * (1.0f/4.0f)), // LED 16
+	Fixed16( 1.0f * (1.0f/4.0f)), // LED 17
+	Fixed16( 0.0f * (1.0f/4.0f)), // LED 18
+};
+
+
 const uint8_t cIndexRotation[6][Display::cLedCount] = {
 	{ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
 	{ 5,  0,  1,  2,  3,  4, 11,  6,  7,  8,  9, 10, 17, 12, 13, 14, 15, 16, 18},
