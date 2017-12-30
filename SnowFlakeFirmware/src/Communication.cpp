@@ -86,7 +86,7 @@ const uint16_t cCounterTimeSynchronization = 0x1000;
 
 /// The detection tolerance of the timings
 ///
-const uint16_t cCounterTimeTolerance = 0x0040;
+const uint16_t cCounterTimeTolerance = 0x0080;
 
 
 /// The duration of a counter cycle for the following timer calculations.
