@@ -260,23 +260,27 @@ void masterLoop()
 	while (true) {
 		// Animate the current scene.
 		Player::animate();
-		// Check if its time to think about the next scene
-		if (gState == State::Play && gSceneElapsedTime.elapsedTime() > (cSceneDuration - 50)) {
-			auto nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
-			while (nextScene == gNextSceneIndex && cScenesOnDisplayCount != 1) {
-				nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
-			}
-			gNextSceneIndex = nextScene;
-			gNextSceneEntropy = Helper::getRandom8(0, 0xff);
-			Communication::sendData(cCmdNextScene | static_cast<uint32_t>(gNextSceneIndex) | (static_cast<uint32_t>(gNextSceneEntropy) << 8));
-			gState = State::SendSynchronization;
-		} else if (gState == State::SendSynchronization && gSceneElapsedTime.elapsedTime() >= cSceneDuration) {
-			Communication::sendSynchronization();
-			gState = State::BlendScene;
-		} else if (gState == State::BlendScene && Communication::isReadyToSend()) {
-			Player::blendToScene(cScenesOnDisplay[gNextSceneIndex], gNextSceneEntropy, cBlendDuration);
-			gState = State::Play;
-			gSceneElapsedTime.start();			
+		// Check if blending is required/wanted.
+		if (cScenesOnDisplayCount > 1 || cTraceBlendOnSingleScene) {
+			// Check if its time to think about the next scene
+			if (gState == State::Play && gSceneElapsedTime.elapsedTime() > (cSceneDuration - 50)) {
+				// Select a random new scene, which is not the currently played one.
+				auto nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
+				while (nextScene == gNextSceneIndex && cScenesOnDisplayCount != 1) {
+					nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
+				}
+				gNextSceneIndex = nextScene;
+				gNextSceneEntropy = Helper::getRandom8(0, 0xff);
+				Communication::sendData(cCmdNextScene | static_cast<uint32_t>(gNextSceneIndex) | (static_cast<uint32_t>(gNextSceneEntropy) << 8));
+				gState = State::SendSynchronization;
+			} else if (gState == State::SendSynchronization && gSceneElapsedTime.elapsedTime() >= cSceneDuration) {
+				Communication::sendSynchronization();
+				gState = State::BlendScene;
+			} else if (gState == State::BlendScene && Communication::isReadyToSend()) {
+				Player::blendToScene(cScenesOnDisplay[gNextSceneIndex], gNextSceneEntropy, cBlendDuration);
+				gState = State::Play;
+				gSceneElapsedTime.start();
+			}			
 		}
 	}	
 }

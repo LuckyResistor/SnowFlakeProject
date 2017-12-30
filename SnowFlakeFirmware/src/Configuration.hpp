@@ -72,6 +72,12 @@ const bool cTraceLongNegotiation = true; // false for production.
 ///
 const bool cTraceShowIdentifierOnStart = true; // false for production.
 
+/// Blend on the same scene, even there is only one defined.
+///
+/// You can enable this to test different entropy values for a single scene.
+///
+const bool cTraceBlendOnSingleScene = false; // false for production.
+
 /// The configuration for the trace outputs pins.
 ///
 const TraceOutputPins cTraceOutputPins = TraceOutputPins::Disabled; // Disabled for production.
