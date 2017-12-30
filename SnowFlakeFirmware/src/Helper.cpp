@@ -22,6 +22,7 @@
 
 
 #include "Chip.hpp"
+#include "Hardware.hpp"
 
 #include <random>
 
@@ -47,6 +48,8 @@ void initialize()
 	// Enable the interrupt with a low priority.
 	NVIC_SetPriority(SysTick_IRQn, 2);
 	NVIC_EnableIRQ(SysTick_IRQn);
+	// Seed the PRND with some entropy.
+	gRandomGeneratorEngine.seed(Hardware::getEntropy());
 }
 
 __attribute__((optimize(0))) // never optimize this function.

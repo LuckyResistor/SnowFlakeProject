@@ -134,6 +134,74 @@ void initializeCpuSpeed()
 }
 
 
+/// Initialize one ADC to get entropy for the random number generator.
+///
+void initializeAdcForRandom()
+{
+	// Enable power for the ADC peripheral.
+	PM->APBCMASK.bit.ADC_ = true;
+	// Send the main clock to the ADC.
+	GCLK->CLKCTRL.reg =
+		GCLK_CLKCTRL_ID_ADC |
+		GCLK_CLKCTRL_GEN_GCLK0 |
+		GCLK_CLKCTRL_CLKEN;
+	while (GCLK->STATUS.bit.SYNCBUSY) {}; // Wait for synchronization
+
+	// Select the internal 1V reference voltage.
+	ADC->REFCTRL.reg =
+		ADC_REFCTRL_REFSEL_INT1V;
+	while (ADC->STATUS.bit.SYNCBUSY == true) {}; // Wait for synchronization.				
+	// Select the internal temperature sensor as source.
+	ADC->INPUTCTRL.reg =
+		ADC_INPUTCTRL_GAIN_1X |
+		ADC_INPUTCTRL_MUXNEG_GND |
+		ADC_INPUTCTRL_MUXPOS_TEMP;
+	while (ADC->STATUS.bit.SYNCBUSY == true) {}; // Wait for synchronization.
+	// A slower sample speed.
+	ADC->CTRLB.reg =
+		ADC_CTRLB_PRESCALER_DIV16;
+	while (ADC->STATUS.bit.SYNCBUSY == true) {}; // Wait for synchronization.		
+	// Enable the ADC
+	ADC->CTRLA.bit.ENABLE = true;
+	while (ADC->STATUS.bit.SYNCBUSY == true) {}; // Wait for synchronization.
+}
+
+
+/// Get a single 12bit value from the ADC
+///
+uint16_t getAdcValue()
+{
+	// Clear the ready flag.
+	ADC->INTFLAG.bit.RESRDY = true;
+	// Start the ADC.
+	ADC->SWTRIG.bit.START = true;
+	while (ADC->STATUS.bit.SYNCBUSY == true) {}; // Wait for synchronization.
+	// Wait for the result.
+	while (ADC->INTFLAG.bit.RESRDY == false) {};
+	// Read the result.
+	return ADC->RESULT.reg;
+}
+
+
+uint32_t getEntropy()
+{
+	const uint8_t bitsToRoll = 5;
+	// Start with a value.
+	uint32_t result = 0xa927fc19ul;
+	// Get 32 values from the ADC which just vary in the first bits of the value.
+	for (uint8_t i = 0; i < 32; ++i) {
+		const auto value = getAdcValue();
+		const auto highBits = static_cast<uint8_t>(result >> (sizeof(uint32_t)*8-bitsToRoll));
+		// Integrate the new seed.
+		result ^= value;
+		// Roll the value by five bits.
+		result <<= bitsToRoll;
+		result |= highBits;
+	}
+	return result;
+}
+
+
 /// Initialize the trace outputs
 ///
 void initializeTraceOutputs()
@@ -154,6 +222,7 @@ void initialize()
 	}
 	initializeCpuClocks();
 	initializeCpuSpeed();
+	initializeAdcForRandom();
 	initializeTraceOutputs();
 }
 

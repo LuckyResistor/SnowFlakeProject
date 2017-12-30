@@ -125,6 +125,10 @@ void setOutput(PortName port, PortState output);
 ///
 PortState getInput(PortName port);
 
+/// Get entropy for the pseudo random number generator
+///
+uint32_t getEntropy();
+
 /// Set trace output A to high state.
 ///
 void setTraceOutputA();
