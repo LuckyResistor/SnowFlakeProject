@@ -27,6 +27,8 @@
 #include "../RandomFrameCounters.hpp"
 #include "../ValueArrays.hpp"
 #include "../ShiftingMap.hpp"
+#include "../Communication.hpp"
+#include "../Configuration.hpp"
 
 
 namespace scene {
@@ -61,28 +63,30 @@ const uint16_t cSparkleValuesCount = sizeof(ValueArrays::cRandom)/sizeof(Fixed16
 ///
 const InterpolatingArray<cSparkleValuesCount> cSparkleValuesInterpolation(ValueArrays::cRandom);
 
-/// Create a random frame counter for a the sparkle
+/// The number of random elements used for the base animation.
 ///
-const RandomFrameCounters<40, 512, Display::cLedCount+2> gSparkleFrameCounters;
+const uint8_t cBaseAnimationElementCount = 32;
+
+/// The interpolating array for the base animation
+///
+const InterpolatingArray<cBaseAnimationElementCount> cBaseAnimationInterpolation(ValueArrays::cRandom+cBaseAnimationElementCount);
+
+/// The shifting map for the sparkle.
+///
+const ShiftingMap<0> gDiagonalShiftingMap(LedMaps::cDiagonal);
 
 /// Create a random frame counter for a smooth base animation
 ///
 const RandomFrameCounters<400, 600, 2> gBaseFrameCounters;
 
-/// The base animation for the particles.
+/// Create a random frame counter for a the sparkle
 ///
-const Fixed16 cBaseAnimation[] = {
-	Fixed16(0.5f), Fixed16(0.7f), Fixed16(0.6f), Fixed16(0.4f), Fixed16(0.5f), Fixed16(0.4f), Fixed16(0.7f), Fixed16(0.6f),
-	Fixed16(0.5f), Fixed16(0.6f), Fixed16(0.5f), Fixed16(0.4f), Fixed16(0.7f), Fixed16(0.4f), Fixed16(0.6f), Fixed16(0.5f),
-};
+const RandomFrameCounters<40, 512, Display::cLedCount+2> gSparkleFrameCounters;
 
-/// The interpolating array for the base animation
+/// The data offset for the position shift in the scene data.
 ///
-const InterpolatingArray<sizeof(cBaseAnimation)/sizeof(Fixed16)> cBaseAnimationInterpolation(cBaseAnimation);
+const uint16_t cPositionShiftDataOffset = 40;
 
-/// The shifting map for the sparkle.
-///
-const ShiftingMap<0> gDiagonalShiftingMap(LedMaps::cDiagonal);
 
 
 
@@ -92,6 +96,21 @@ void initialize(SceneData *data, uint8_t entropy)
 	gBaseFrameCounters.initialize(data);
 	// Initialize the shifting map with a random direction from the given entropy value.
 	gDiagonalShiftingMap.initialize(data, (entropy/43), Fixed16(0.1f));
+	// Initialize the shift for the sparkle ramp.
+	const auto position = Fixed16(static_cast<int16_t>(Communication::getIdentifier()));
+	const auto maxPosition = Fixed16(static_cast<int16_t>(cConfigurationStrandElementCount));
+	const auto positionShift = Fixed16(0.2f);
+	if ((entropy & 1) == 0) {
+		data->fixed16[cPositionShiftDataOffset] = (position / maxPosition * positionShift);		
+	} else {
+		data->fixed16[cPositionShiftDataOffset] = positionShift - (position / maxPosition * positionShift);		
+	}
+}
+
+
+inline Fixed16 getPositionShift(SceneData *data)
+{
+	return data->fixed16[cPositionShiftDataOffset];
 }
 
 
@@ -99,16 +118,18 @@ Frame getFrame(SceneData *data, FrameIndex frameIndex)
 {
 	// Create the base frame
 	auto resultFrame = gBaseFrameCounters.getFrame(data, [](Fixed16 x)->PixelValue{
-		return cBaseAnimationInterpolation.getSmoothValueAt(x);
+		return cBaseAnimationInterpolation.getSmoothValueAt(x) * Fixed16(0.3f) + Fixed16(0.3f);
 	});
 	// Create the sparkle values frame
 	auto sparkleValueFrame = gSparkleFrameCounters.getFrame(data, [](Fixed16 x)->PixelValue{
-		// Create a +/- 0.25 value from the random values.
-		return cSparkleValuesInterpolation.getHardValueAt(x) * Fixed16(0.5f) - Fixed16(0.25f);
+		// Create a +/- 0.4 value from the random values.
+		return cSparkleValuesInterpolation.getHardValueAt(x) * Fixed16(0.8f) - Fixed16(0.4f);
 	});
 	// Create a frame with the sparkle ramp and multiple the value frame with it.
 	sparkleValueFrame.multipleWith(Frame([=](uint8_t pixelIndex)->PixelValue{
-		return cSparkleRampInterpolation.getSmoothValueAt(gDiagonalShiftingMap.getPositionWrapped(data, pixelIndex, cFrameCount, frameIndex));
+		auto shift = gDiagonalShiftingMap.getPositionWrapped(data, pixelIndex, cFrameCount, frameIndex);
+		shift = PixelValue(shift + getPositionShift(data)).wrapped();
+		return cSparkleRampInterpolation.getSmoothValueAt(shift);
 	}));
 	// Add the sparkle to the base animation with limits.
 	resultFrame.addWithLimit(sparkleValueFrame);

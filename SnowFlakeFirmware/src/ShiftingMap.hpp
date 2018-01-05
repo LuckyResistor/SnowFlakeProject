@@ -32,7 +32,7 @@
 template<uint16_t dataOffset = 0>
 class ShiftingMap
 {
-	public:
+public:
 	/// Create a new shifting map instance.
 	///
 	/// @param ledMap The pointer to the ledMap to use.
