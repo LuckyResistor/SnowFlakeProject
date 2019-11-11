@@ -1,7 +1,7 @@
 //
 // Snow Flake Project
 // ---------------------------------------------------------------------------
-// (c)2017 by Lucky Resistor. See LICENSE for details.
+// (c)2017-2019 by Lucky Resistor. See LICENSE for details.
 // https://luckyresistor.me
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,7 @@ public:
 	/// An enumeration to name all defined scenes in this firmware.
 	///
 	enum Name : uint8_t {
-		Black,
+		Black = 0,
 		IceSparkle,
 		SkyWithStars,
 		Waves,

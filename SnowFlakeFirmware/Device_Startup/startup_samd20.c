@@ -3,7 +3,7 @@
  *
  * \brief gcc starttup file for SAMD20
  *
- * Copyright (c) 2017 Microchip Technology Inc.
+ * Copyright (c) 2018 Microchip Technology Inc.
  *
  * \asf_license_start
  *
@@ -50,9 +50,9 @@ void __libc_init_array(void);
 void Dummy_Handler(void);
 
 /* Cortex-M0+ core handlers */
-void NMI_Handler             ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
+void NonMaskableInt_Handler  ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
 void HardFault_Handler       ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
-void SVC_Handler             ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
+void SVCall_Handler          ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
 void PendSV_Handler          ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
 void SysTick_Handler         ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
 
@@ -107,7 +107,7 @@ const DeviceVectors exception_table = {
         .pvStack                = (void*) (&_estack),
 
         .pfnReset_Handler       = (void*) Reset_Handler,
-        .pfnNMI_Handler         = (void*) NMI_Handler,
+        .pfnNonMaskableInt_Handler = (void*) NonMaskableInt_Handler,
         .pfnHardFault_Handler   = (void*) HardFault_Handler,
         .pvReservedM12          = (void*) (0UL), /* Reserved */
         .pvReservedM11          = (void*) (0UL), /* Reserved */
@@ -116,7 +116,7 @@ const DeviceVectors exception_table = {
         .pvReservedM8           = (void*) (0UL), /* Reserved */
         .pvReservedM7           = (void*) (0UL), /* Reserved */
         .pvReservedM6           = (void*) (0UL), /* Reserved */
-        .pfnSVC_Handler         = (void*) SVC_Handler,
+        .pfnSVCall_Handler      = (void*) SVCall_Handler,
         .pvReservedM4           = (void*) (0UL), /* Reserved */
         .pvReservedM3           = (void*) (0UL), /* Reserved */
         .pfnPendSV_Handler      = (void*) PendSV_Handler,

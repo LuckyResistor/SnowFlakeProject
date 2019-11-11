@@ -1,9 +1,9 @@
 /**
  * \file
  *
- * \brief Linker script for running in internal SRAM on the SAMD20E17
+ * \brief Linker script for running in internal FLASH on the SAMD20E15B
  *
- * Copyright (c) 2017 Microchip Technology Inc.
+ * Copyright (c) 2018 Microchip Technology Inc.
  *
  * \asf_license_start
  *
@@ -35,11 +35,12 @@ SEARCH_DIR(.)
 /* Memory Spaces Definitions */
 MEMORY
 {
-  ram      (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00004000
+  rom      (rx)  : ORIGIN = 0x00000000, LENGTH = 0x00008000
+  ram      (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00001000
 }
 
 /* The stack size used by the application. NOTE: you need to adjust according to your application. */
-STACK_SIZE = DEFINED(STACK_SIZE) ? STACK_SIZE : DEFINED(__stack_size__) ? __stack_size__ : 0x1000;
+STACK_SIZE = DEFINED(STACK_SIZE) ? STACK_SIZE : DEFINED(__stack_size__) ? __stack_size__ : 0x400;
 
 /* Section Definitions */
 SECTIONS
@@ -91,14 +92,14 @@ SECTIONS
 
         . = ALIGN(4);
         _efixed = .;            /* End of text section */
-    } > ram
+    } > rom
 
     /* .ARM.exidx is sorted, so has to go in its own output section.  */
     PROVIDE_HIDDEN (__exidx_start = .);
     .ARM.exidx :
     {
       *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    } > ram
+    } > rom
     PROVIDE_HIDDEN (__exidx_end = .);
 
     . = ALIGN(4);

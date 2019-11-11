@@ -1,7 +1,7 @@
 //
 // Snow Flake Project
 // ---------------------------------------------------------------------------
-// (c)2017 by Lucky Resistor. See LICENSE for details.
+// (c)2017-2019 by Lucky Resistor. See LICENSE for details.
 // https://luckyresistor.me
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,15 @@
 
 
 namespace Communication {
+
+
+/// The operating mode.
+///
+enum class Mode : uint8_t {
+	Negotiation, ///< In negotiation mode.
+	Master, ///< In master mode.
+	Slave, ///< In slave mode.
+};
 
 
 /// The type of the pulse.
@@ -98,10 +107,10 @@ const uint16_t cCounterTimeTolerance = 0x0080;
 /// COUNTER_DIVISOR = 64
 ///
 const uint64_t cCpuFrequency = 48000000LL;
-const uint64_t cCounterDivisor = 64LL;
+const uint64_t cPulseCounterDivisor = 64LL;
 const uint64_t cUnitFactorNs = 1000000000LL;
 const uint64_t cUnitDivisorNStoMS = 1000000LL;
-const uint64_t cCounterCycleDurationNs = (cUnitFactorNs*cCounterDivisor)/cCpuFrequency;
+const uint64_t cCounterCycleDurationNs = (cUnitFactorNs*cPulseCounterDivisor)/cCpuFrequency;
 const uint64_t cMaximumTimeOneBitNs = (std::max<uint64_t>(cCounterTimeZeroBit, cCounterTimeOneBit)+static_cast<uint64_t>(cCounterTimePause))*cCounterCycleDurationNs;
 const uint64_t cMaximumTimeBreakNs = static_cast<uint64_t>(cCounterTimeBreak+cCounterTimePause)*cCounterCycleDurationNs;
 const uint64_t cMaximumTime32BitValueNs = (cMaximumTimeOneBitNs*32LL)+cMaximumTimeBreakNs;
@@ -180,6 +189,10 @@ Error gError = Error::None;
 ///
 uint8_t gIdentifier = 0;
 
+/// The current communication mode.
+///
+volatile Mode gMode = Mode::Negotiation;
+
 /// The registered synchronization function.
 ///
 SynchronizationFn gSynchronizationFn = nullptr;
@@ -187,6 +200,10 @@ SynchronizationFn gSynchronizationFn = nullptr;
 /// The registered read data function.
 ///
 ReadDataFn gReadDataFn = nullptr;
+
+/// The button press function.
+///
+ButtonPressFn gButtonPressFn = nullptr;
 
 
 /// The timestamp on raising edge.
@@ -292,19 +309,6 @@ void initialize()
 	NVIC_ClearPendingIRQ(TC3_IRQn);
 	NVIC_SetPriority(TC3_IRQn, 3);
 	NVIC_EnableIRQ(TC3_IRQn);
-	
-	// Prepare counter 2 to measure the incoming pulse length.
-	PM->APBCMASK.bit.TC2_ = true; // Enable power for counter 2
-	// The counter already have the main clock from the configuration before.
-	// Configure the counter as simple infinite 16bit counter at the same frequency as counter 3
-	TC2->COUNT16.CTRLA.reg =
-		TC_CTRLA_PRESCALER_DIV64 |
-		TC_CTRLA_WAVEGEN_NFRQ |
-		TC_CTRLA_MODE_COUNT16;
-	while (TC2->COUNT16.STATUS.bit.SYNCBUSY) {};
-	// Enable the counter.
-	TC2->COUNT16.CTRLA.bit.ENABLE = true;
-	while (TC2->COUNT16.STATUS.bit.SYNCBUSY) {};	
 }
 
 
@@ -345,6 +349,26 @@ void enableDataMirroringMode()
 {
 	disableTimerDataOutput();
 	gDataMirrorEnabled = true;
+}
+
+/// Enable the timer for input detection.
+///
+void enableInputDetection(bool isMaster)
+{
+	// Prepare counter 2 to measure the incoming pulse length.
+	PM->APBCMASK.bit.TC2_ = true; // Enable power for counter 2
+	// The counter already have the main clock from the configuration before.
+	// Configure the counter as simple infinite 16bit counter at the same frequency as counter 3
+	TC2->COUNT16.CTRLA.reg =
+		(isMaster ? TC_CTRLA_PRESCALER_DIV1024 : TC_CTRLA_PRESCALER_DIV64) |
+		TC_CTRLA_WAVEGEN_NFRQ |
+		TC_CTRLA_MODE_COUNT16;
+	while (TC2->COUNT16.STATUS.bit.SYNCBUSY) {};
+	// Enable the counter.
+	TC2->COUNT16.CTRLA.bit.ENABLE = true;
+	while (TC2->COUNT16.STATUS.bit.SYNCBUSY) {};	
+	// Enable the interrupt.
+	enableDataInputInterrupt();
 }
 
 
@@ -409,6 +433,10 @@ bool masterNegotiation()
 		gError = Error::TimeoutWaitingToSendData;
 		return false;
 	}
+	// Enable the detection of button presses.
+	enableInputDetection(true);
+	// Set the mode.
+	gMode = Mode::Master;
 	// Success.
 	return true;
 }
@@ -430,7 +458,7 @@ bool slaveNegotiation()
 	// Connect the timer to the output
 	enableTimerDataOutput();
 	// Enable the interrupt to capture data from data in.
-	enableDataInputInterrupt();
+	enableInputDetection(false);
 	// Reset the read buffer
 	resetReadBuffer();
 	// Wait for a received value. Expecting an identifier from the previous element.
@@ -464,6 +492,8 @@ bool slaveNegotiation()
 		gError = Error::TimeoutWaitingForInitialSynchronization;
 		return false;		
 	}
+	// Set the mode.
+	gMode = Mode::Slave;
 	// Success.
 	return true;
 }
@@ -614,6 +644,12 @@ void registerReadDataFunction(ReadDataFn readDataFn)
 }
 
 
+void registerButtonPressFunction(ButtonPressFn buttonPressFn)
+{
+	gButtonPressFn = buttonPressFn;
+}
+
+
 /// Restart timer 2
 ///
 void restartTimer2()
@@ -658,6 +694,57 @@ inline bool isPulseTimeEqual(const uint16_t pulseLength, const uint16_t expected
 }
 
 
+/// Handling of pulses in slave mode.
+///
+void handlePulseInSlaveMode(uint16_t pulseLength)
+{
+	// Check which pulse matches.
+	if (isPulseTimeEqual(pulseLength, cCounterTimeZeroBit)) {
+		gCurrentReadData >>= 1;
+		++gCurrentReadBitCount;
+	} else if (isPulseTimeEqual(pulseLength, cCounterTimeOneBit)) {
+		gCurrentReadData >>= 1;
+		gCurrentReadData |= 0x80000000UL;
+		++gCurrentReadBitCount;
+	} else if (isPulseTimeEqual(pulseLength, cCounterTimeBreak)) {
+		if (gCurrentReadBitCount == 32) {
+			gReceivedData = gCurrentReadData;
+			gNewDataReceived = true;
+			if (gReadDataFn != nullptr) {
+				gReadDataFn(gReceivedData);
+			}
+		}
+		gCurrentReadBitCount = 0;
+		gCurrentReadData = 0;
+	} else if (isPulseTimeEqual(pulseLength, cCounterTimeSynchronization)) {
+		if (gSynchronizationFn != nullptr) {
+			gSynchronizationFn();
+		}
+		gNewSynchronizationReceived = true;
+		gCurrentReadBitCount = 0;
+		gCurrentReadData = 0;
+	} else {
+		// Ignore any unknown pulse lengths. Could be noise.
+	}
+}
+
+
+/// Handling of pulses in master mode (button presses by the user).
+///
+void handlePulseInMasterMode(uint16_t pulseLength)
+{
+	const uint16_t cMinimumPress = 0x0080; // Everything shorter than this is noise
+	const uint16_t cShortPress = 0x8000; // ~700ms
+	if (gButtonPressFn != nullptr) {
+		if (pulseLength > cMinimumPress && pulseLength <= cShortPress) {
+			gButtonPressFn(ButtonPress::Short);
+			} else if (pulseLength > cShortPress) {
+			gButtonPressFn(ButtonPress::Long);
+		}
+	}
+}
+
+
 /// Method called on each external interrupt.
 ///
 void onExternalInterrupt()
@@ -672,7 +759,6 @@ void onExternalInterrupt()
 	if (gDataMirrorEnabled) {
 		Hardware::setOutput(cPortDataOut, inputPortState);		
 	}
-	
 	// Measure the pulse lengths and detect the received signals.
 	if (inputPortState == Hardware::PortState::High) {
 		restartTimer2();
@@ -683,33 +769,10 @@ void onExternalInterrupt()
 		if (TC2->COUNT16.INTFLAG.bit.OVF) {
 			pulseLength = std::numeric_limits<uint16_t>::max();
 		}
-		// Check which pulse matches.
-		if (isPulseTimeEqual(pulseLength, cCounterTimeZeroBit)) {
-			gCurrentReadData >>= 1;
-			++gCurrentReadBitCount;
-		} else if (isPulseTimeEqual(pulseLength, cCounterTimeOneBit)) {
-			gCurrentReadData >>= 1;
-			gCurrentReadData |= 0x80000000UL;
-			++gCurrentReadBitCount;
-		} else if (isPulseTimeEqual(pulseLength, cCounterTimeBreak)) {
-			if (gCurrentReadBitCount == 32) {
-				gReceivedData = gCurrentReadData;
-				gNewDataReceived = true;
-				if (gReadDataFn != nullptr) {
-					gReadDataFn(gReceivedData);
-				}
-			}
-			gCurrentReadBitCount = 0;
-			gCurrentReadData = 0;		
-		} else if (isPulseTimeEqual(pulseLength, cCounterTimeSynchronization)) {
-			if (gSynchronizationFn != nullptr) {
-				gSynchronizationFn();
-			}
-			gNewSynchronizationReceived = true;
-			gCurrentReadBitCount = 0;
-			gCurrentReadData = 0;		
+		if (gMode == Mode::Master) {
+			handlePulseInMasterMode(pulseLength);
 		} else {
-			// Ignore any unknown pulse lengths. Could be noise.
+			handlePulseInSlaveMode(pulseLength);
 		}
 	}		
 }

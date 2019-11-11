@@ -3,7 +3,7 @@
  *
  * \brief Low-level initialization functions called upon chip startup.
  *
- * Copyright (c) 2017 Microchip Technology Inc.
+ * Copyright (c) 2018 Microchip Technology Inc.
  *
  * \asf_license_start
  *
@@ -45,9 +45,9 @@ uint32_t SystemCoreClock = __SYSTEM_CLOCK;/*!< System Clock Frequency (Core Cloc
  */
 void SystemInit(void)
 {
-	// Keep the default device state after reset
-	SystemCoreClock = __SYSTEM_CLOCK;
-	return;
+        // Keep the default device state after reset
+        SystemCoreClock = __SYSTEM_CLOCK;
+        return;
 }
 
 /**
@@ -58,7 +58,7 @@ void SystemInit(void)
  */
 void SystemCoreClockUpdate(void)
 {
-	// Not implemented
-	SystemCoreClock = __SYSTEM_CLOCK;
-	return;
+        // Not implemented
+        SystemCoreClock = __SYSTEM_CLOCK;
+        return;
 }

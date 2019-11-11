@@ -1,7 +1,7 @@
 //
 // Snow Flake Project
 // ---------------------------------------------------------------------------
-// (c)2017 by Lucky Resistor. See LICENSE for details.
+// (c)2017-2019 by Lucky Resistor. See LICENSE for details.
 // https://luckyresistor.me
 //
 // This program is free software; you can redistribute it and/or modify
@@ -71,12 +71,6 @@ const bool cTraceLongNegotiation = true; // false for production.
 /// identifier number and the center LED.
 ///
 const bool cTraceShowIdentifierOnStart = true; // false for production.
-
-/// Blend on the same scene, even there is only one defined.
-///
-/// You can enable this to test different entropy values for a single scene.
-///
-const bool cTraceBlendOnSingleScene = false; // false for production.
 
 /// The configuration for the trace outputs pins.
 ///

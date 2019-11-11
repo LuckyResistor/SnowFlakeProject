@@ -1,7 +1,7 @@
 //
 // Snow Flake Project
 // ---------------------------------------------------------------------------
-// (c)2017 by Lucky Resistor. See LICENSE for details.
+// (c)2017-2019 by Lucky Resistor. See LICENSE for details.
 // https://luckyresistor.me
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,12 @@
 ///
 namespace Communication {
 
+/// A button press by the user.
+///
+enum class ButtonPress {
+	Short, ///< A short press 100-1500ms
+	Long, ///< A long press 1500-5000ms
+};
 
 /// The function called after a synchronization request is received on a client.
 ///
@@ -36,6 +42,10 @@ typedef void (*SynchronizationFn)();
 /// The function which is called if a new value is read on a client.
 ///
 typedef void (*ReadDataFn)(uint32_t data);
+
+/// The function which is called if the user presses a button.
+///
+typedef void (*ButtonPressFn)(ButtonPress buttonPress);
 
 /// Errors for the communication.
 ///
@@ -184,6 +194,13 @@ void registerSynchronisationFunction(SynchronizationFn synchronizationFn);
 /// the master board.
 ///
 void registerReadDataFunction(ReadDataFn readDataFn);
+
+/// Register a button press function.
+///
+/// This function is called if the used pressed the button on the data-in
+/// line for the master snow-flake.
+///
+void registerButtonPressFunction(ButtonPressFn buttonPressFn);
 
 	
 }

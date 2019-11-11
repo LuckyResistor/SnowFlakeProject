@@ -1,7 +1,7 @@
 //
 // Snow Flake Project
 // ---------------------------------------------------------------------------
-// (c)2017 by Lucky Resistor. See LICENSE for details.
+// (c)2017-2019 by Lucky Resistor. See LICENSE for details.
 // https://luckyresistor.me
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,11 +40,28 @@ namespace Application {
 // Forward declarations.
 void onDataReceived(uint32_t value);
 void onSynchronization();
+void onButtonPress(Communication::ButtonPress buttonPress);
+
+
+/// The application mode
+///
+enum class Mode : uint8_t {
+	Automatic, ///< Scenes are switched in regular intervals.
+	Single, ///< One scene is displayed forever.	
+};
+
+
+/// The configuration mode.
+///
+enum class ConfigurationMode : uint8_t {
+	Mode, ///< Configure the play mode.
+	SceneDuration, ///< Configure the scene duration.	
+};
 
 	
 /// The application state
 ///
-enum class State {
+enum class State : uint8_t {
 	/// The current scene is playing.
 	///
 	Play,
@@ -61,28 +78,85 @@ enum class State {
 	/// Slave received the synchronization and starts the blend.
 	///
 	BlendScene,
+	
+	/// Request Off.
+	///
+	/// The used did a long press in on mode, an off state is requested.
+	/// This state is only valid for the master mode.
+	///
+	OffRequest,
+		
+	/// Off.
+	///
+	/// All LEDs are disabled. Slaves are waiting for new scenes to wake up.
+	///
+	Off,
+	
+	/// Request On.
+	///
+	/// Turn the platform on if it was turned off.
+	///
+	OnRequest,
+	
+	/// Configuration.
+	///
+	/// The configuration is displayed.
+	///
+	Configuration,
 };
 	
-/// The scenes to display.
+/// The scenes for auto mode A
 ///
-const Scene::Name cScenesOnDisplay[] = {
+const Scene::Name cAutoScenesA[] = {
+	Scene::SkyWithStars,
+	Scene::IceSparkle,
+	Scene::Waves,
+	Scene::Circles,		
+};
+
+/// The scenes for auto mode B
+///
+const Scene::Name cAutoScenesB[] = {
 	Scene::SkyWithStars,
 	Scene::IceSparkle,
 	Scene::Waves,
 	Scene::Circles,
-	
-	//Ignore the simple scenes for production release.
-	//Scene::SimpleRandomFlicker,
-	//Scene::SimpleRandomParticle,
-	//Scene::SimpleRotation,
-	//Scene::SimpleDiagonal,
-	//Scene::SimpleShift,
-	//Scene::SimpleFlash,
+	Scene::SimpleRandomFlicker,
+	Scene::SimpleRandomParticle,
+	Scene::SimpleRotation,
+	Scene::SimpleDiagonal,
+	Scene::SimpleShift,
+	Scene::SimpleFlash,
 };
 
-/// The number of scenes to display.
+
+/// The scenes for auto mode C
 ///
-const uint8_t cScenesOnDisplayCount = sizeof(cScenesOnDisplay)/sizeof(Scene::Name);
+const Scene::Name cAutoScenesC[] = {
+	Scene::SimpleRandomFlicker,
+	Scene::SimpleRandomParticle,
+	Scene::SimpleRotation,
+	Scene::SimpleDiagonal,
+	Scene::SimpleShift,
+	Scene::SimpleFlash,
+};
+
+/// One automatic scene mode.
+///
+struct AutoScenes {
+	const Scene::Name *scenes;
+	uint8_t count;
+};
+
+/// All different automatic scene modes.
+///
+const AutoScenes cAutoScenes[] = {
+	{cAutoScenesA, sizeof(cAutoScenesA)/sizeof(Scene::Name)},
+	{cAutoScenesB, sizeof(cAutoScenesB)/sizeof(Scene::Name)},
+	{cAutoScenesC, sizeof(cAutoScenesC)/sizeof(Scene::Name)}
+};
+const uint8_t cAutoScenesCount = sizeof(cAutoScenes)/sizeof(AutoScenes);
+
 
 /// Duration of a scene blend in frames.
 ///
@@ -90,7 +164,23 @@ const uint32_t cBlendDuration = 80;
 
 /// Duration how long a scene is shown in milliseconds.
 ///
-const uint32_t cSceneDuration = 60000;
+const uint32_t cSceneDurations[] = {15000, 30000, 60000, 90000, 120000, 360000};
+
+/// The number of scene durations.
+///
+const uint8_t cSceneDurationsCount = sizeof(cSceneDurations)/sizeof(uint32_t);
+
+/// Duration how long the configuration is shown in milliseconds.
+///
+const uint32_t cConfigurationDuration = 6000; // 6s
+
+/// Configuration LEDs A
+///
+const uint8_t cConfigurationRowA[] = { 6,  7,  8,  9, 10, 11};
+
+/// Configuration LEDs B
+///
+const uint8_t cConfigurationRowB[] = {17, 12, 13, 14, 15, 16};
 
 
 /// The mask for a command.
@@ -101,9 +191,13 @@ const uint32_t cCmdMask = 0xffff0000ul;
 ///
 const uint32_t cCmdNextScene = 0xa5140000ul;
 
-/// The mask for the scene index portion.
+/// The mask for the "off" command.
 ///
-const uint32_t cCmdNextScene_SceneMask = 0x000000fful;
+const uint32_t cCmdOff = 0xa5150000ul;
+
+/// The mask for the scene name portion.
+///
+const uint32_t cCmdNextScene_SceneNameMask = 0x000000fful;
 
 /// The mask for the scene entropy portion.
 ///
@@ -112,7 +206,7 @@ const uint32_t cCmdNextScene_EntropyMask = 0x0000ff00ul;
 
 /// The index of the next scene to display.
 ///
-volatile uint8_t gNextSceneIndex = 0;
+volatile Scene::Name gNextSceneName = Scene::Black;
 
 /// The entropy for the next scene to display.
 ///
@@ -126,6 +220,30 @@ volatile State gState = State::Play;
 /// The elapsed timer to measure the length of a scene.
 ///
 ElapsedTimer gSceneElapsedTime;
+
+/// The application mode.
+///
+volatile Mode gMode = Mode::Automatic;
+
+/// The selected scene duration.
+///
+volatile uint8_t gSceneDurationIndex = 2;
+
+/// The current scene duration.
+///
+uint32_t gSceneDuration = (60000 - 50);
+
+/// The automatic scenes index.
+///
+volatile uint8_t gAutoScenesIndex = 0;
+
+/// The scene for the single mode.
+///
+volatile Scene::Name gSingleModeScene = Scene::IceSparkle;
+
+/// The configuration mode.
+///
+volatile ConfigurationMode gConfigurationMode = ConfigurationMode::Mode;
 
 
 /// Display an error state with the LEDs of the board.
@@ -171,15 +289,78 @@ void communicationTestMaster()
 void displayBoardIdentifier()
 {
 	Display::setAllLedLevels(0);
-	Display::setLedLevel(Communication::getIdentifier(), Display::cMaximumLevel);
+	Display::setLedLevel(Communication::getIdentifier(), 32);
 	for (uint8_t i = 0; i < 10; ++i) {
-		Display::setLedLevel(Display::cLedCount-1, Display::cMaximumLevel);
+		Display::setLedLevel(Display::cLedCount-1, 16);
 		Display::synchronizeAndShow();
-		Helper::delayMs(200);
+		Helper::delayMs(100);
 		Display::setLedLevel(Display::cLedCount-1, 0);
 		Display::synchronizeAndShow();
-		Helper::delayMs(200);
+		Helper::delayMs(100);
 	}
+}
+
+
+/// Display the configuration.
+///
+void displayConfiguration()
+{
+	// Display the indicator for configuration.
+	Display::setAllLedLevels(gConfigurationMode == ConfigurationMode::Mode ? 0 : 5);
+	const bool indicatorState = (Helper::getSystemTimeMs() & (1u<<3u)) != 0;
+	uint8_t indicatorLevel = (indicatorState ? 12 : 20);
+	for (uint8_t i = 0; i < 6; ++i) {
+		Display::setLedLevel(i, indicatorLevel);
+	}
+	
+	// Light the middle LED for automatic mode
+	if (gConfigurationMode == ConfigurationMode::Mode) {
+		if (gMode == Mode::Automatic) {
+			Display::setLedLevel(18, 20);
+			Display::setLedLevel(cConfigurationRowA[gAutoScenesIndex], 40);
+		} else if (gMode == Mode::Single) {
+			auto sceneNumber = static_cast<uint8_t>(gSingleModeScene) - 1;
+			auto rowB = sceneNumber / 6;
+			auto rowA = sceneNumber % 6;
+			Display::setLedLevel(cConfigurationRowA[rowA], 40);
+			Display::setLedLevel(cConfigurationRowB[rowB], 15);
+			Display::setLedLevel(cConfigurationRowB[(rowB+1)%6], 15);
+		}		
+	} else {
+		for (uint8_t i = 0; i <= gSceneDurationIndex; ++i) {
+			Display::setLedLevel(cConfigurationRowB[i], 40+i*2);
+		}
+	}
+	
+	Display::synchronizeAndShow();
+}
+
+
+/// Send an immediate scene change to all slave boards.
+///
+void sendImmediateChange(Scene::Name nextSceneName, uint8_t nextSceneEntropy)
+{
+	Helper::delayMs(50);
+	Communication::sendData(cCmdNextScene | static_cast<uint32_t>(nextSceneName) | (static_cast<uint32_t>(nextSceneEntropy) << 8));
+	Communication::waitUntilReadyToSend();
+	Helper::delayMs(50); // Wait until all boards are ready.
+	Communication::sendSynchronization();
+}
+
+
+/// Set a random next scene for the current mode.
+///
+void setRandomNextScene()
+{
+	if (gMode == Mode::Automatic) {
+		auto autoScenes = cAutoScenes[gAutoScenesIndex];
+		auto scenes = autoScenes.scenes;
+		auto scenesCount = autoScenes.count;
+		gNextSceneName = scenes[Helper::getRandom8(0, scenesCount-1)];
+	} else {
+		gNextSceneName = gSingleModeScene;		
+	}
+	gNextSceneEntropy = Helper::getRandom8(0, 0xff);
 }
 
 
@@ -187,20 +368,15 @@ void displayBoardIdentifier()
 ///
 void masterInitialize()
 {
-	// Decide about the first scene to display.
-	gNextSceneIndex = Helper::getRandom8(0, cScenesOnDisplayCount-1);
-	gNextSceneEntropy = Helper::getRandom8(0, 0xff);
+	// Set the first scene to display.
+	setRandomNextScene();
 		
 	// Send the scene number to all other boards.
-	Helper::delayMs(50);
-	Communication::sendData(cCmdNextScene | static_cast<uint32_t>(gNextSceneIndex) | (static_cast<uint32_t>(gNextSceneEntropy) << 8));
-	Communication::waitUntilReadyToSend();
-	Helper::delayMs(50); // Wait until all boards are ready.
-	Communication::sendSynchronization();
+	sendImmediateChange(gNextSceneName, gNextSceneEntropy);
 			
 	// Blend to the first scene from black.
 	Player::displayScene(Scene::Black, 0);
-	Player::blendToScene(cScenesOnDisplay[gNextSceneIndex], gNextSceneEntropy, cBlendDuration);
+	Player::blendToScene(gNextSceneName, gNextSceneEntropy, cBlendDuration);
 	gSceneElapsedTime.start();
 	while (Player::getState() == Player::State::Blend) {
 		Player::animate();
@@ -236,6 +412,8 @@ void initialize()
 	if (Communication::getIdentifier() != 0) {
 		Communication::registerReadDataFunction(&onDataReceived);
 		Communication::registerSynchronisationFunction(&onSynchronization);		
+	} else {
+		Communication::registerButtonPressFunction(&onButtonPress);
 	}
 
 	// If configured display the board identifier first.
@@ -252,35 +430,117 @@ void initialize()
 }
 
 
+/// Process the off request state.
+///
+void processOffRequest()
+{
+	// Select the black scene and send this to all boards.
+	gNextSceneName = Scene::Black;
+	gNextSceneEntropy = 0;
+	sendImmediateChange(gNextSceneName, gNextSceneEntropy);
+	Player::blendToScene(gNextSceneName, gNextSceneEntropy, cBlendDuration);
+	gState = State::Off;
+}
+
+
+/// Process the off state.
+///
+void processOff()
+{
+	// Wait here, until the user decides to turn the platform on.
+}
+
+
+/// Process the on request state.
+///
+void processOnRequest()
+{
+	// Set the first scene to display.
+	setRandomNextScene();
+
+	// Send the scene number to all other boards.
+	sendImmediateChange(gNextSceneName, gNextSceneEntropy);
+			
+	// Set the scene duration.
+	gSceneDuration = cSceneDurations[gSceneDurationIndex] - 50;
+			
+	// Blend to the first scene from black.
+	Player::displayScene(Scene::Black, 0);
+	Player::blendToScene(gNextSceneName, gNextSceneEntropy, cBlendDuration);
+	gSceneElapsedTime.start();
+	gState = State::BlendScene;
+}
+
+
+/// Process the play state.
+///
+void processPlay()
+{
+	if (gMode == Mode::Automatic && gSceneElapsedTime.elapsedTime() >= gSceneDuration) {
+		// Select a random new scene, which is not the currently played one.
+		auto lastScene = gNextSceneName;
+		setRandomNextScene();
+		while (lastScene == gNextSceneName) {
+			setRandomNextScene();
+		}
+		Communication::sendData(cCmdNextScene | static_cast<uint32_t>(gNextSceneName) | (static_cast<uint32_t>(gNextSceneEntropy) << 8));
+		gState = State::SendSynchronization;
+	}
+}
+
+
+/// Process the send synchronization state.
+///
+void processSendSynchronization()
+{
+	if (gSceneElapsedTime.elapsedTime() >= gSceneDuration) {
+		Communication::sendSynchronization();
+		gState = State::BlendScene;
+	}
+}
+
+
+/// Process the blend state.
+///
+void processBlendScene()
+{
+	if (Communication::isReadyToSend()) {
+		Player::blendToScene(gNextSceneName, gNextSceneEntropy, cBlendDuration);
+		gState = State::Play;
+		gSceneElapsedTime.start();
+	}
+}
+
+
+/// Process the configuration state.
+///
+void processConfiguration()
+{
+	displayConfiguration();
+	if (gSceneElapsedTime.elapsedTime() >= cConfigurationDuration) {
+		processOnRequest();
+	}
+}
+
+
 /// The loop for a board in master mode.
 ///
 __attribute__((noreturn))
 void masterLoop()
 {
 	while (true) {
-		// Animate the current scene.
-		Player::animate();
-		// Check if blending is required/wanted.
-		if (cScenesOnDisplayCount > 1 || cTraceBlendOnSingleScene) {
-			// Check if its time to think about the next scene
-			if (gState == State::Play && gSceneElapsedTime.elapsedTime() > (cSceneDuration - 50)) {
-				// Select a random new scene, which is not the currently played one.
-				auto nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
-				while (nextScene == gNextSceneIndex && cScenesOnDisplayCount != 1) {
-					nextScene = Helper::getRandom8(0, cScenesOnDisplayCount-1);
-				}
-				gNextSceneIndex = nextScene;
-				gNextSceneEntropy = Helper::getRandom8(0, 0xff);
-				Communication::sendData(cCmdNextScene | static_cast<uint32_t>(gNextSceneIndex) | (static_cast<uint32_t>(gNextSceneEntropy) << 8));
-				gState = State::SendSynchronization;
-			} else if (gState == State::SendSynchronization && gSceneElapsedTime.elapsedTime() >= cSceneDuration) {
-				Communication::sendSynchronization();
-				gState = State::BlendScene;
-			} else if (gState == State::BlendScene && Communication::isReadyToSend()) {
-				Player::blendToScene(cScenesOnDisplay[gNextSceneIndex], gNextSceneEntropy, cBlendDuration);
-				gState = State::Play;
-				gSceneElapsedTime.start();
-			}			
+		if (gState != State::Configuration) {
+			// Animate the current scene.
+			Player::animate();			
+		}
+		switch (gState) {
+			case State::OffRequest: processOffRequest(); break;
+			case State::Off: processOff(); break;
+			case State::OnRequest: processOnRequest(); break;
+			case State::Play: processPlay(); break;
+			case State::SendSynchronization: processSendSynchronization(); break;
+			case State::BlendScene: processBlendScene(); break;
+			case State::Configuration: processConfiguration(); break;
 		}
 	}	
 }
@@ -292,8 +552,11 @@ void onDataReceived(uint32_t value)
 {
 	// Check incoming commands.
 	if ((value & cCmdMask) == cCmdNextScene) {
-		gNextSceneIndex = static_cast<uint8_t>(value & cCmdNextScene_SceneMask);
+		gNextSceneName = static_cast<Scene::Name>(static_cast<uint8_t>(value & cCmdNextScene_SceneNameMask));
 		gNextSceneEntropy = static_cast<uint8_t>((value & cCmdNextScene_EntropyMask) >> 8);
+	} else if ((value & cCmdMask) == cCmdOff) {
+		gNextSceneName = Scene::Black;
+		gNextSceneEntropy = 0;
 	}
 }
 
@@ -303,6 +566,59 @@ void onDataReceived(uint32_t value)
 void onSynchronization()
 {
 	gState = State::BlendScene;
+}
+
+
+void onButtonPress(Communication::ButtonPress buttonPress)
+{
+	if (buttonPress == Communication::ButtonPress::Long) {
+		if (gState == State::Configuration) {
+			if (gConfigurationMode == ConfigurationMode::Mode) {
+				gConfigurationMode = ConfigurationMode::SceneDuration;
+			} else {
+				gConfigurationMode = ConfigurationMode::Mode;
+			}
+		} else if (gState != State::Off && gState != State::OffRequest) {
+			gState = State::OffRequest;	
+		} else if (gState == State::Off) {
+			gState = State::OnRequest;
+		}
+	} else if (buttonPress == Communication::ButtonPress::Short) {
+		if (gState == State::Off) {
+			gState = State::OnRequest;			
+		} else if (gState == State::Play || gState == State::BlendScene || gState == State::SendSynchronization) {
+			gState = State::Configuration;
+			gMode = Mode::Automatic;
+			gConfigurationMode = ConfigurationMode::Mode;
+			//gAutoScenesIndex = 0;
+			//gSingleModeScene = static_cast<Scene::Name>(1);
+			gSceneElapsedTime.start();
+		} else if (gState == State::Configuration) {
+			if (gConfigurationMode == ConfigurationMode::Mode) {
+				if (gMode == Mode::Automatic) {
+					gAutoScenesIndex += 1;
+					if (gAutoScenesIndex >= cAutoScenesCount) {
+						gAutoScenesIndex = 0;
+						gMode = Mode::Single;
+						gSingleModeScene = static_cast<Scene::Name>(1);
+					}
+					} else if (gMode == Mode::Single) {
+					gSingleModeScene = static_cast<Scene::Name>(static_cast<uint8_t>(gSingleModeScene) + 1);
+					if (gSingleModeScene >= SceneManager::getSceneCount()) {
+						gAutoScenesIndex = 0;
+						gMode = Mode::Automatic;
+						gSingleModeScene = static_cast<Scene::Name>(1);
+					}
+				}				
+			} else {
+				gSceneDurationIndex += 1;
+				if (gSceneDurationIndex >= cSceneDurationsCount) {
+					gSceneDurationIndex = 0;
+				}
+			}
+			gSceneElapsedTime.start();
+		}
+	}
 }
 
 
@@ -316,7 +632,7 @@ void slaveLoop()
 		Player::animate();
 		// Act on application states
 		if (gState == State::BlendScene) {
-			Player::blendToScene(cScenesOnDisplay[gNextSceneIndex], gNextSceneEntropy, cBlendDuration);
+			Player::blendToScene(gNextSceneName, gNextSceneEntropy, cBlendDuration);
 			gState = State::Play;			
 		}
 	}
