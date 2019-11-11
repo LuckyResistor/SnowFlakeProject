@@ -98,6 +98,13 @@ enum class State : uint8_t {
 	///
 	OnRequest,
 	
+	/// Request Configuration.
+	///
+	/// The user requested configuration mode.
+	/// This intermediate step allow to turn off all other flakes while configuring the strand. 
+	///
+	ConfigurationRequest,
+	
 	/// Configuration.
 	///
 	/// The configuration is displayed.
@@ -512,6 +519,15 @@ void processBlendScene()
 }
 
 
+/// Process the configuration request.
+///
+void processConfigurationRequest()
+{
+	sendImmediateChange(Scene::Black, 0);
+	gState = State::Configuration;
+}
+
+
 /// Process the configuration state.
 ///
 void processConfiguration()
@@ -534,12 +550,13 @@ void masterLoop()
 			Player::animate();			
 		}
 		switch (gState) {
-			case State::OffRequest: processOffRequest(); break;
-			case State::Off: processOff(); break;
-			case State::OnRequest: processOnRequest(); break;
 			case State::Play: processPlay(); break;
 			case State::SendSynchronization: processSendSynchronization(); break;
 			case State::BlendScene: processBlendScene(); break;
+			case State::OffRequest: processOffRequest(); break;
+			case State::Off: processOff(); break;
+			case State::OnRequest: processOnRequest(); break;
+			case State::ConfigurationRequest: processConfigurationRequest(); break;
 			case State::Configuration: processConfiguration(); break;
 		}
 	}	
@@ -587,11 +604,8 @@ void onButtonPress(Communication::ButtonPress buttonPress)
 		if (gState == State::Off) {
 			gState = State::OnRequest;			
 		} else if (gState == State::Play || gState == State::BlendScene || gState == State::SendSynchronization) {
-			gState = State::Configuration;
-			gMode = Mode::Automatic;
+			gState = State::ConfigurationRequest;
 			gConfigurationMode = ConfigurationMode::Mode;
-			//gAutoScenesIndex = 0;
-			//gSingleModeScene = static_cast<Scene::Name>(1);
 			gSceneElapsedTime.start();
 		} else if (gState == State::Configuration) {
 			if (gConfigurationMode == ConfigurationMode::Mode) {
