@@ -103,5 +103,28 @@ const uint8_t cIndexRotation[6][Display::cLedCount] = {
 };
 
 
+const PixelPosition cCanvas9x9[Display::cLedCount] = {
+	PixelPosition(4, 0), // LED 00
+	PixelPosition(8, 2), // LED 01
+	PixelPosition(8, 6), // LED 02
+	PixelPosition(4, 8), // LED 03
+	PixelPosition(0, 6), // LED 04
+	PixelPosition(0, 2), // LED 05
+	PixelPosition(4, 2), // LED 06
+	PixelPosition(7, 3), // LED 07
+	PixelPosition(7, 5), // LED 08
+	PixelPosition(4, 6), // LED 09
+	PixelPosition(1, 5), // LED 10
+	PixelPosition(1, 3), // LED 11
+	PixelPosition(5, 3), // LED 12
+	PixelPosition(6, 4), // LED 13
+	PixelPosition(5, 5), // LED 14
+	PixelPosition(3, 5), // LED 15
+	PixelPosition(2, 4), // LED 16
+	PixelPosition(3, 3), // LED 17
+	PixelPosition(4, 4), // LED 18
+};
+
+
 }
 

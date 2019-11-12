@@ -40,6 +40,7 @@ public:
 		SkyWithStars,
 		Waves,
 		Circles,
+		Rain,
 		SimpleShift,
 		SimpleRotation,
 		SimpleDiagonal,

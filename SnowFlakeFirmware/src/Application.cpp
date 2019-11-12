@@ -128,6 +128,7 @@ const Scene::Name cAutoScenesB[] = {
 	Scene::IceSparkle,
 	Scene::Waves,
 	Scene::Circles,
+	Scene::Rain,
 	Scene::SimpleRandomFlicker,
 	Scene::SimpleRandomParticle,
 	Scene::SimpleRotation,
@@ -148,6 +149,18 @@ const Scene::Name cAutoScenesC[] = {
 	Scene::SimpleFlash,
 };
 
+
+/// The scenes for auto mode D
+///
+const Scene::Name cAutoScenesD[] = {
+	Scene::SkyWithStars,
+	Scene::IceSparkle,
+	Scene::Waves,
+	Scene::Circles,
+	Scene::Rain,
+};
+
+
 /// One automatic scene mode.
 ///
 struct AutoScenes {
@@ -160,7 +173,8 @@ struct AutoScenes {
 const AutoScenes cAutoScenes[] = {
 	{cAutoScenesA, sizeof(cAutoScenesA)/sizeof(Scene::Name)},
 	{cAutoScenesB, sizeof(cAutoScenesB)/sizeof(Scene::Name)},
-	{cAutoScenesC, sizeof(cAutoScenesC)/sizeof(Scene::Name)}
+	{cAutoScenesC, sizeof(cAutoScenesC)/sizeof(Scene::Name)},
+	{cAutoScenesD, sizeof(cAutoScenesD)/sizeof(Scene::Name)},
 };
 const uint8_t cAutoScenesCount = sizeof(cAutoScenes)/sizeof(AutoScenes);
 
@@ -171,7 +185,7 @@ const uint32_t cBlendDuration = 80;
 
 /// Duration how long a scene is shown in milliseconds.
 ///
-const uint32_t cSceneDurations[] = {15000, 30000, 60000, 90000, 120000, 360000};
+const uint32_t cSceneDurations[] = {15000, 30000, 60000, 120000, 360000, 600000};
 
 /// The number of scene durations.
 ///

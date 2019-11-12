@@ -25,6 +25,7 @@
 #include "Display.hpp"
 #include "Hardware.hpp"
 #include "SceneManager.hpp"
+#include "Fixed16.hpp"
 
 #include <cstring>
 
@@ -91,7 +92,7 @@ Frame getNextFrame()
 			gSlotB.frame = 0;
 		}
 		const float factor = static_cast<float>(gBlendCurrentFrame)/static_cast<float>(gBlendLastFrame);
-		frameA.blendTo(frameB, factor);
+		frameA.blendTo(frameB, Fixed16(factor));
 		++gBlendCurrentFrame;
 		if (gBlendCurrentFrame >= gBlendLastFrame) {
 			std::memcpy(&gSlotA, &gSlotB, sizeof(Slot));
