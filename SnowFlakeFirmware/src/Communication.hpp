@@ -30,7 +30,8 @@ namespace Communication {
 
 /// A button press by the user.
 ///
-enum class ButtonPress {
+enum class ButtonPress : uint8_t {
+	None, ///< No button press.
 	Short, ///< A short press 100-1500ms
 	Long, ///< A long press 1500-5000ms
 };
@@ -42,10 +43,6 @@ typedef void (*SynchronizationFn)();
 /// The function which is called if a new value is read on a client.
 ///
 typedef void (*ReadDataFn)(uint32_t data);
-
-/// The function which is called if the user presses a button.
-///
-typedef void (*ButtonPressFn)(ButtonPress buttonPress);
 
 /// Errors for the communication.
 ///
@@ -173,6 +170,10 @@ bool waitForData(uint32_t timeout);
 ///
 uint32_t readData();
 
+/// Get the next button press from the queue.
+///
+ButtonPress getNextButtonPress();
+
 /// Wait for a synchronization pulse.
 ///
 /// @param timeout The timeout in milliseconds.
@@ -194,13 +195,6 @@ void registerSynchronisationFunction(SynchronizationFn synchronizationFn);
 /// the master board.
 ///
 void registerReadDataFunction(ReadDataFn readDataFn);
-
-/// Register a button press function.
-///
-/// This function is called if the used pressed the button on the data-in
-/// line for the master snow-flake.
-///
-void registerButtonPressFunction(ButtonPressFn buttonPressFn);
 
 	
 }

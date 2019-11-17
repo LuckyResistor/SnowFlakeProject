@@ -234,6 +234,12 @@
     <Compile Include="src\Application.hpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\AutoScenes.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\AutoScenes.hpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\Chip.hpp">
       <SubType>compile</SubType>
     </Compile>
@@ -283,6 +289,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\InterpolatingArray.hpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\SynchronizedQueue.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\LedMaps.cpp">

@@ -25,6 +25,7 @@
 #include "ElapsedTimer.hpp"
 #include "Hardware.hpp"
 #include "Helper.hpp"
+#include "SynchronizedQueue.h"
 
 #include "Chip.hpp"
 
@@ -201,9 +202,9 @@ SynchronizationFn gSynchronizationFn = nullptr;
 ///
 ReadDataFn gReadDataFn = nullptr;
 
-/// The button press function.
+/// The button press queue
 ///
-ButtonPressFn gButtonPressFn = nullptr;
+SynchronizedQueue<ButtonPress, 8> gButtonPressQueue;
 
 
 /// The timestamp on raising edge.
@@ -616,6 +617,16 @@ uint32_t readData()
 }
 
 
+ButtonPress getNextButtonPress()
+{
+	ButtonPress buttonPress;
+	if (!gButtonPressQueue.getElement(buttonPress)) {
+		return ButtonPress::None;
+	}
+	return buttonPress;
+}
+
+
 bool waitForSynchonization(uint32_t timeout)
 {
 	gNewSynchronizationReceived = false;
@@ -641,12 +652,6 @@ void registerSynchronisationFunction(SynchronizationFn synchronizationFn)
 void registerReadDataFunction(ReadDataFn readDataFn)
 {
 	gReadDataFn = readDataFn;
-}
-
-
-void registerButtonPressFunction(ButtonPressFn buttonPressFn)
-{
-	gButtonPressFn = buttonPressFn;
 }
 
 
@@ -735,12 +740,14 @@ void handlePulseInMasterMode(uint16_t pulseLength)
 {
 	const uint16_t cMinimumPress = 0x0080; // Everything shorter than this is noise
 	const uint16_t cShortPress = 0x8000; // ~700ms
-	if (gButtonPressFn != nullptr) {
-		if (pulseLength > cMinimumPress && pulseLength <= cShortPress) {
-			gButtonPressFn(ButtonPress::Short);
-			} else if (pulseLength > cShortPress) {
-			gButtonPressFn(ButtonPress::Long);
-		}
+	ButtonPress buttonPress = ButtonPress::None;
+	if (pulseLength > cMinimumPress && pulseLength <= cShortPress) {
+		buttonPress = ButtonPress::Short;
+	} else if (pulseLength > cShortPress) {
+		buttonPress = ButtonPress::Long;
+	}
+	if (buttonPress != ButtonPress::None) {
+		gButtonPressQueue.putElement(buttonPress);
 	}
 }
 

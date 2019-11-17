@@ -21,6 +21,7 @@
 #include "Application.hpp"
 
 
+#include "AutoScenes.hpp"
 #include "Communication.hpp"
 #include "Configuration.hpp"
 #include "Display.hpp"
@@ -112,71 +113,6 @@ enum class State : uint8_t {
 	Configuration,
 };
 	
-/// The scenes for auto mode A
-///
-const Scene::Name cAutoScenesA[] = {
-	Scene::SkyWithStars,
-	Scene::IceSparkle,
-	Scene::Waves,
-	Scene::Circles,		
-};
-
-/// The scenes for auto mode B
-///
-const Scene::Name cAutoScenesB[] = {
-	Scene::SkyWithStars,
-	Scene::IceSparkle,
-	Scene::Waves,
-	Scene::Circles,
-	Scene::Rain,
-	Scene::SimpleRandomFlicker,
-	Scene::SimpleRandomParticle,
-	Scene::SimpleRotation,
-	Scene::SimpleDiagonal,
-	Scene::SimpleShift,
-	Scene::SimpleFlash,
-};
-
-
-/// The scenes for auto mode C
-///
-const Scene::Name cAutoScenesC[] = {
-	Scene::SimpleRandomFlicker,
-	Scene::SimpleRandomParticle,
-	Scene::SimpleRotation,
-	Scene::SimpleDiagonal,
-	Scene::SimpleShift,
-	Scene::SimpleFlash,
-};
-
-
-/// The scenes for auto mode D
-///
-const Scene::Name cAutoScenesD[] = {
-	Scene::SkyWithStars,
-	Scene::IceSparkle,
-	Scene::Waves,
-	Scene::Circles,
-	Scene::Rain,
-};
-
-
-/// One automatic scene mode.
-///
-struct AutoScenes {
-	const Scene::Name *scenes;
-	uint8_t count;
-};
-
-/// All different automatic scene modes.
-///
-const AutoScenes cAutoScenes[] = {
-	{cAutoScenesA, sizeof(cAutoScenesA)/sizeof(Scene::Name)},
-	{cAutoScenesB, sizeof(cAutoScenesB)/sizeof(Scene::Name)},
-	{cAutoScenesC, sizeof(cAutoScenesC)/sizeof(Scene::Name)},
-	{cAutoScenesD, sizeof(cAutoScenesD)/sizeof(Scene::Name)},
-};
-const uint8_t cAutoScenesCount = sizeof(cAutoScenes)/sizeof(AutoScenes);
 
 
 /// Duration of a scene blend in frames.
@@ -433,8 +369,6 @@ void initialize()
 	if (Communication::getIdentifier() != 0) {
 		Communication::registerReadDataFunction(&onDataReceived);
 		Communication::registerSynchronisationFunction(&onSynchronization);		
-	} else {
-		Communication::registerButtonPressFunction(&onButtonPress);
 	}
 
 	// If configured display the board identifier first.
@@ -546,7 +480,6 @@ void processConfigurationRequest()
 ///
 void processConfiguration()
 {
-	displayConfiguration();
 	if (gSceneElapsedTime.elapsedTime() >= cConfigurationDuration) {
 		processOnRequest();
 	}
@@ -559,10 +492,15 @@ __attribute__((noreturn))
 void masterLoop()
 {
 	while (true) {
-		if (gState != State::Configuration) {
+		// Handle the display.
+		if (gState == State::Configuration) {
+			// In configuration mode, display the current configuration parameter.
+			displayConfiguration();
+		} else {
 			// Animate the current scene.
 			Player::animate();			
 		}
+		// Handle the different states.
 		switch (gState) {
 			case State::Play: processPlay(); break;
 			case State::SendSynchronization: processSendSynchronization(); break;
@@ -572,6 +510,11 @@ void masterLoop()
 			case State::OnRequest: processOnRequest(); break;
 			case State::ConfigurationRequest: processConfigurationRequest(); break;
 			case State::Configuration: processConfiguration(); break;
+		}
+		// Handle any button presses.
+		const auto buttonPress = Communication::getNextButtonPress();
+		if (buttonPress != Communication::ButtonPress::None) {
+			onButtonPress(buttonPress);
 		}
 	}	
 }
@@ -600,6 +543,8 @@ void onSynchronization()
 }
 
 
+/// The function to handle button presses for the different states.
+///
 void onButtonPress(Communication::ButtonPress buttonPress)
 {
 	if (buttonPress == Communication::ButtonPress::Long) {
@@ -609,6 +554,7 @@ void onButtonPress(Communication::ButtonPress buttonPress)
 			} else {
 				gConfigurationMode = ConfigurationMode::Mode;
 			}
+			gSceneElapsedTime.start();
 		} else if (gState != State::Off && gState != State::OffRequest) {
 			gState = State::OffRequest;	
 		} else if (gState == State::Off) {
