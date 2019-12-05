@@ -53,13 +53,18 @@ enum class TraceOutputSource : uint8_t {
 ///
 const uint8_t cConfigurationStrandElementCount = 5;
 
+/// Start with the user scene for testing.
+///
+const bool cStartWithUserScene = false; // false for production
+
+
 /// Should the start be delayed?
 ///
 const bool cTraceStartDelayed = false; // false for production.
 
 /// Use a very long negotiation duration.
 ///
-/// This is used if you have attached programmer to the chip which delays the
+/// This is used if you have attached a programmer to the chip which delays the
 /// start up to one second.
 ///
 const bool cTraceLongNegotiation = true; // false for production.

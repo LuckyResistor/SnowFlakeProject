@@ -331,6 +331,13 @@ void masterInitialize()
 	// Send the scene number to all other boards.
 	sendImmediateChange(gNextSceneName, gNextSceneEntropy);
 			
+	// Only for testing: Start with the user scene.
+	if (cStartWithUserScene) {
+		gMode = Mode::Single;
+		gNextSceneName = Scene::User;
+		gNextSceneEntropy = 0;
+	}
+			
 	// Blend to the first scene from black.
 	Player::displayScene(Scene::Black, 0);
 	Player::blendToScene(gNextSceneName, gNextSceneEntropy, cBlendDuration);

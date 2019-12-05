@@ -47,6 +47,7 @@ public:
 		SimpleFlash,
 		SimpleRandomParticle,
 		SimpleRandomFlicker,
+		User,
 	};
 	
 public:
