@@ -38,13 +38,6 @@ void initialize(SceneData*, uint8_t)
 Frame getFrame(SceneData*, FrameIndex frameIndex)
 {
 	Frame frame;
-/*	static bool state = false;
-	if (state) {
-		frame = Frame(PixelValue(1.0f));
-	} else {
-		frame = Frame(PixelValue(0.0f));		
-	}
-	state = !state; */
 	for (uint8_t i = 0; i < Display::cLedCount; ++i) {
 		const auto shiftedValue = static_cast<uint8_t>((frameIndex + i) % Display::cLedCount);
 		frame.pixelValue[i] = PixelValue::normalFromRange<uint8_t>(0, Display::cLedCount-1, shiftedValue);
