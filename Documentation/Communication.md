@@ -11,7 +11,7 @@ Each snow flake board has a data input and output pad to allow communication bet
 4. Theoretically, the communication can also be used to detect how many snow flake boards are part of the same strand. This final number can be reported back the whole strand. It would keep the firmware flexible, boards can be added and removed from a strand and the scenes would always work with the current number of snow flakes. While this is possible, it is not part of the current firmware implementation. This firmware always assumes a fixed number of snow flakes, which is configured in the firmware as a configuration variable.
 
 ## Basic Principle
-The communication is a master/client system, where the first snow flake in the strand is the master. The master sends data down the strand which is received by the clients. Each client just passes the received data unmodified to the next client in the strand.
+The communication is a primary/secondary system, where the first snow flake in the strand is the primary. The primary sends data down the strand which is received by the secondarys. Each secondary just passes the received data unmodified to the next secondary in the strand.
 
 For robustness, the protocol uses a pulse length encoding. Different lengths of pulses encode bits and control information. Because of the variations in the CPU frequencies and unshielded cables, there is a certain timing tolerance built in the protocol.
 
@@ -20,15 +20,15 @@ In the start process of each snow flake, the position and mode of the element is
 
 1. The output line is set to high.
 2. The system waits a short time if the input line goes to high.
-3. In the case the input line goes to high, the system switches to client mode.
-4. In the case the input line stays low, the system switches to master mode.
+3. In the case the input line goes to high, the system switches to secondary mode.
+4. In the case the input line stays low, the system switches to primary mode.
 5. The output line is set to low.
 
-### Negotiation as Master
-The master system assigns index zero to itself and sends the next index number (1) to the next client in the strand.
+### Negotiation as Primary
+The primary system assigns index zero to itself and sends the next index number (1) to the next secondary in the strand.
 
-### Negotiation as Client
-The client waits for an incoming number from the previous element in the strand. After it receives this number, it assigns this number to itself as index number and sends this number plus one to the next client in the strand.
+### Negotiation as Secondary
+The secondary waits for an incoming number from the previous element in the strand. After it receives this number, it assigns this number to itself as index number and sends this number plus one to the next secondary in the strand.
 
 ### Index numbers
 The index number is sent with the same protocol described below. The index number is encoded like this:
@@ -44,7 +44,7 @@ There are a number of error situations in the negotiation:
 In this error cases, the snow flake will flag the error internally. The firmware will display a special scene to indicate the error to the user.
 
 ## Regular Communication
-The regular communication consist of 32bit values sent from the master to all clients. Currently there is a single command implemented:
+The regular communication consist of 32bit values sent from the primary to all secondarys. Currently there is a single command implemented:
 
 Blend scene: `0xA514YYXX` - XX is the new scene number, YY the entropy value for the new scene.
 
@@ -73,7 +73,7 @@ There are a number of technical situations how the transmission of signals and v
 1. A signal with an unknown length is received.
 2. A break signal is received, but the number of previously received zero and one bits is not 32.
 
-In both cases, the communication is reset and the client is waiting for a new value. Any further handling of these problems make no sense, because there is no way to recover from them.
+In both cases, the communication is reset and the secondary is waiting for a new value. Any further handling of these problems make no sense, because there is no way to recover from them.
 
 ### Logical Problems
 

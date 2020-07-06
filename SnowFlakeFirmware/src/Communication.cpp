@@ -40,8 +40,8 @@ namespace Communication {
 ///
 enum class Mode : uint8_t {
 	Negotiation, ///< In negotiation mode.
-	Master, ///< In master mode.
-	Slave, ///< In slave mode.
+	Primary, ///< In primary mode.
+	Secondary, ///< In secondary mode.
 };
 
 
@@ -133,7 +133,7 @@ const uint16_t cNegotiationWaitForLowLevelTimeout = cNegotiationHighLevelDuratio
 
 /// The number of milliseconds to wait after the high level.
 ///
-/// This is the delay after the master board sets the data out line back to low,
+/// This is the delay after the primary board sets the data out line back to low,
 /// before the first identifier is sent to the next board.
 ///
 const uint16_t cNegotiationDelayBeforeIdentifier = cNegotiationTimeBlock;
@@ -154,7 +154,7 @@ const uint16_t cNegotiationWaitForIdentifierTimeout = cMaximumTimeToSendValue * 
 
 /// The number of milliseconds to wait for the initial synchronization pulse.
 ///
-/// The master waits `cNegotiationWaitForIdentifierTimeout` after sending the first identifier
+/// The primary waits `cNegotiationWaitForIdentifierTimeout` after sending the first identifier
 /// before it sends the initial synchronization pulse. Therefore this timeout has to be longer
 /// than the timeout to wait for the identifier. 
 ///
@@ -354,14 +354,14 @@ void enableDataMirroringMode()
 
 /// Enable the timer for input detection.
 ///
-void enableInputDetection(bool isMaster)
+void enableInputDetection(bool isPrimary)
 {
 	// Prepare counter 2 to measure the incoming pulse length.
 	PM->APBCMASK.bit.TC2_ = true; // Enable power for counter 2
 	// The counter already have the main clock from the configuration before.
 	// Configure the counter as simple infinite 16bit counter at the same frequency as counter 3
 	TC2->COUNT16.CTRLA.reg =
-		(isMaster ? TC_CTRLA_PRESCALER_DIV1024 : TC_CTRLA_PRESCALER_DIV64) |
+		(isPrimary ? TC_CTRLA_PRESCALER_DIV1024 : TC_CTRLA_PRESCALER_DIV64) |
 		TC_CTRLA_WAVEGEN_NFRQ |
 		TC_CTRLA_MODE_COUNT16;
 	while (TC2->COUNT16.STATUS.bit.SYNCBUSY) {};
@@ -405,11 +405,11 @@ bool signalNextAndWaitForSignalFromPrevious()
 }
 
 
-/// Negotiation in master mode.
+/// Negotiation in primary mode.
 ///
 /// @return true on success, false on any error.
 ///
-bool masterNegotiation()
+bool primaryNegotiation()
 {
 	// Set the output back to low, this will happen after the `cNegotiationHighLevelDuration` time.
 	Hardware::setOutput(cPortDataOut, Hardware::PortState::Low);
@@ -437,24 +437,24 @@ bool masterNegotiation()
 	// Enable the detection of button presses.
 	enableInputDetection(true);
 	// Set the mode.
-	gMode = Mode::Master;
+	gMode = Mode::Primary;
 	// Success.
 	return true;
 }
 
 
-/// Negotiation in slave mode.
+/// Negotiation in secondary mode.
 ///
 /// @return true on success, false on any error.
 ///
-bool slaveNegotiation()
+bool secondaryNegotiation()
 {
-	// As slave we wait for the low state from the master to keep this synchronized.
+	// As secondary we wait for the low state from the primary to keep this synchronized.
 	if (!waitForInputStateChange(Hardware::PortState::High, cNegotiationWaitForLowLevelTimeout)) {
 		gError = Error::TimeoutWaitingForLow;
 		return false;		
 	}
-	// Set the output to low synchronized with the master. 
+	// Set the output to low synchronized with the primary. 
 	Hardware::setOutput(cPortDataOut, Hardware::PortState::Low);
 	// Connect the timer to the output
 	enableTimerDataOutput();
@@ -488,13 +488,13 @@ bool slaveNegotiation()
 	}
 	// Enable the data mirroring mode.
 	enableDataMirroringMode();
-	// Now wait for the synchronization signal from the master board.
+	// Now wait for the synchronization signal from the primary board.
 	if (!waitForSynchonization(cNegotiationWaitForInitialSynchronization)) {
 		gError = Error::TimeoutWaitingForInitialSynchronization;
 		return false;		
 	}
 	// Set the mode.
-	gMode = Mode::Slave;
+	gMode = Mode::Secondary;
 	// Success.
 	return true;
 }
@@ -505,9 +505,9 @@ bool waitForNegotiation()
 	// Check if there is a previous element.
 	const bool hasPreviousElement = signalNextAndWaitForSignalFromPrevious();
 	if (!hasPreviousElement) {
-		return masterNegotiation();
+		return primaryNegotiation();
 	} else {
-		return slaveNegotiation();
+		return secondaryNegotiation();
 	}
 }
 
@@ -699,9 +699,9 @@ inline bool isPulseTimeEqual(const uint16_t pulseLength, const uint16_t expected
 }
 
 
-/// Handling of pulses in slave mode.
+/// Handling of pulses in secondary mode.
 ///
-void handlePulseInSlaveMode(uint16_t pulseLength)
+void handlePulseInSecondaryMode(uint16_t pulseLength)
 {
 	// Check which pulse matches.
 	if (isPulseTimeEqual(pulseLength, cCounterTimeZeroBit)) {
@@ -734,9 +734,9 @@ void handlePulseInSlaveMode(uint16_t pulseLength)
 }
 
 
-/// Handling of pulses in master mode (button presses by the user).
+/// Handling of pulses in primary mode (button presses by the user).
 ///
-void handlePulseInMasterMode(uint16_t pulseLength)
+void handlePulseInPrimaryMode(uint16_t pulseLength)
 {
 	const uint16_t cMinimumPress = 0x0080; // Everything shorter than this is noise
 	const uint16_t cShortPress = 0x8000; // ~700ms
@@ -776,10 +776,10 @@ void onExternalInterrupt()
 		if (TC2->COUNT16.INTFLAG.bit.OVF) {
 			pulseLength = std::numeric_limits<uint16_t>::max();
 		}
-		if (gMode == Mode::Master) {
-			handlePulseInMasterMode(pulseLength);
+		if (gMode == Mode::Primary) {
+			handlePulseInPrimaryMode(pulseLength);
 		} else {
-			handlePulseInSlaveMode(pulseLength);
+			handlePulseInSecondaryMode(pulseLength);
 		}
 	}		
 }

@@ -67,29 +67,29 @@ enum class State : uint8_t {
 	///
 	Play,
 	
-	/// Master sent the next scene index and waiting to send the synchronization.
+	/// Primary sent the next scene index and waiting to send the synchronization.
 	///
 	SendSynchronization, 
 	
 	/// Blend the scene.
 	///
-	/// Master is waiting for the synchronization finished to be sent which
+	/// Primary is waiting for the synchronization finished to be sent which
 	/// triggers the blend.
 	///
-	/// Slave received the synchronization and starts the blend.
+	/// Secondary received the synchronization and starts the blend.
 	///
 	BlendScene,
 	
 	/// Request Off.
 	///
 	/// The used did a long press in on mode, an off state is requested.
-	/// This state is only valid for the master mode.
+	/// This state is only valid for the primary mode.
 	///
 	OffRequest,
 		
 	/// Off.
 	///
-	/// All LEDs are disabled. Slaves are waiting for new scenes to wake up.
+	/// All LEDs are disabled. Secondaries are waiting for new scenes to wake up.
 	///
 	Off,
 	
@@ -224,7 +224,7 @@ void displayError(uint8_t errorCode)
 /// This will send a new value every two seconds and display it as binary 
 /// pattern on the snow flake.
 ///
-void communicationTestMaster()
+void communicationTestPrimary()
 {
 	Helper::delayMs(2000);
 	uint32_t value = 0;
@@ -293,7 +293,7 @@ void displayConfiguration()
 }
 
 
-/// Send an immediate scene change to all slave boards.
+/// Send an immediate scene change to all secondary boards.
 ///
 void sendImmediateChange(Scene::Name nextSceneName, uint8_t nextSceneEntropy)
 {
@@ -321,9 +321,9 @@ void setRandomNextScene()
 }
 
 
-/// The initialization for a board in master mode.
+/// The initialization for a board in primary mode.
 ///
-void masterInitialize()
+void primaryInitialize()
 {
 	// Set the first scene to display.
 	setRandomNextScene();
@@ -348,9 +348,9 @@ void masterInitialize()
 }
 
 
-/// The initialization for a board in slave mode.
+/// The initialization for a board in secondary mode.
 ///
-void slaveInitialize()
+void secondaryInitialize()
 {
 	Player::displayScene(Scene::Black, 0);
 }
@@ -372,7 +372,7 @@ void initialize()
 		displayError(static_cast<uint8_t>(Communication::getError()));
 	}
 
-	// Register the functions to receive data and the synchronization for boards in slave mode.
+	// Register the functions to receive data and the synchronization for boards in secondary mode.
 	if (Communication::getIdentifier() != 0) {
 		Communication::registerReadDataFunction(&onDataReceived);
 		Communication::registerSynchronisationFunction(&onSynchronization);		
@@ -385,9 +385,9 @@ void initialize()
 	
 	// Continue with the initialization based on the received identifier
 	if (Communication::getIdentifier() == 0) {
-		masterInitialize();
+		primaryInitialize();
 	} else {
-		slaveInitialize();
+		secondaryInitialize();
 	}
 }
 
@@ -493,10 +493,10 @@ void processConfiguration()
 }
 
 
-/// The loop for a board in master mode.
+/// The loop for a board in primary mode.
 ///
 __attribute__((noreturn))
-void masterLoop()
+void primaryLoop()
 {
 	while (true) {
 		// Handle the display.
@@ -527,7 +527,7 @@ void masterLoop()
 }
 
 
-/// The function to receive data from the master.
+/// The function to receive data from the primary.
 ///
 void onDataReceived(uint32_t value)
 {
@@ -542,7 +542,7 @@ void onDataReceived(uint32_t value)
 }
 
 
-/// The function to receive the synchronization from the master.
+/// The function to receive the synchronization from the primary.
 ///
 void onSynchronization()
 {
@@ -603,10 +603,10 @@ void onButtonPress(Communication::ButtonPress buttonPress)
 }
 
 
-/// The loop for a board in slave mode.
+/// The loop for a board in secondary mode.
 ///
 __attribute__((noreturn))
-void slaveLoop()
+void secondaryLoop()
 {
 	while (true) {
 		// Animate the current scene.
@@ -623,9 +623,9 @@ void slaveLoop()
 void loop()
 {
 	if (Communication::getIdentifier() == 0) {
-		masterLoop();
+		primaryLoop();
 	} else {
-		slaveLoop();
+		secondaryLoop();
 	}
 }
 

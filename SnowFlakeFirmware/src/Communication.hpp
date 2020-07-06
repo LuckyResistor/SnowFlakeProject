@@ -36,11 +36,11 @@ enum class ButtonPress : uint8_t {
 	Long, ///< A long press 1500-5000ms
 };
 
-/// The function called after a synchronization request is received on a client.
+/// The function called after a synchronization request is received on a secondary.
 ///
 typedef void (*SynchronizationFn)();
 
-/// The function which is called if a new value is read on a client.
+/// The function which is called if a new value is read on a secondary.
 ///
 typedef void (*ReadDataFn)(uint32_t data);
 
@@ -120,7 +120,7 @@ Error getError();
 /// The identifier is an index value, starting from zero which is 
 /// increased by one for each board in the sequence.
 ///
-/// The board with the identifier 0 (zero) is the master controller
+/// The board with the identifier 0 (zero) is the primary controller
 /// of the stand. This is the only board which can send information
 /// and send the synchronization signal to the other boards.
 ///
@@ -131,7 +131,7 @@ uint8_t getIdentifier();
 /// Send data to all other boards.
 ///
 /// The sent 32bit are stored on all other devices. This method
-/// has only an effect on the master board with the identifier 0.
+/// has only an effect on the primary board with the identifier 0.
 /// It will trigger sending the data to all other boards.
 ///
 /// @param data The data value to send to all other boards.
@@ -184,7 +184,7 @@ bool waitForSynchonization(uint32_t timeout);
 /// Register a synchronization function.
 ///
 /// This function is called after a synchronization is received from the
-/// master controller. Keep this function as short as possible, because it
+/// primary controller. Keep this function as short as possible, because it
 /// runs in the interrupt of the communication component.
 ///
 void registerSynchronisationFunction(SynchronizationFn synchronizationFn);
@@ -192,7 +192,7 @@ void registerSynchronisationFunction(SynchronizationFn synchronizationFn);
 /// Register a read data function.
 ///
 /// This function is called after a data value was successfully read from
-/// the master board.
+/// the primary board.
 ///
 void registerReadDataFunction(ReadDataFn readDataFn);
 
